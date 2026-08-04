@@ -51,11 +51,13 @@ npm install && npm start
 
 ## Deploy
 
-- **Backend (Render):** root dir `backend`, build `npm install && npm run build`, start `npm run start:prod`. The schema auto-creates (`CREATE EXTENSION IF NOT EXISTS vector`, tables, indexes) on boot.
+Repo ships ready-made configs: `render.yaml` (backend), `netlify.toml` (frontend), `.github/workflows/eas-build.yml` (mobile).
+
+- **Backend (Render):** use the Blueprint `render.yaml` (`smart-pdf-backend` service) or point Render at root dir `backend` with build `npm ci && npm run build` and start `node dist/main`. The schema auto-creates (`CREATE EXTENSION IF NOT EXISTS vector`, tables, indexes) on boot. Set the `sync: false` env vars (`DATABASE_URL`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, optional `SMTP_*`) in the Render dashboard.
 - **DB:** any Postgres with the `vector` extension (Neon, Supabase, RDS, local).
-- **Frontend:** static export → Vercel or Netlify (root dir `frontend`).
+- **Frontend (Netlify):** `netlify.toml` builds the static export from `frontend/` and publishes `out/` with the live `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_WIDGET_URL`.
 - **Widget:** built to `frontend/public/widget.js` and served by the frontend host; run `npm run build` inside `widget/` before deploying the frontend.
-- **Mobile:** `cd mobile && npx eas init` (once), replace the `REPLACE_WITH_EAS_PROJECT_ID` placeholder in `app.json`, then `eas build -p android --profile preview` for an APK.
+- **Mobile (EAS):** `.github/workflows/eas-build.yml` builds a preview APK on every push touching `mobile/`. First-time setup: add an `EXPO_TOKEN` secret to the repo, run `cd mobile && npx eas init` once, and replace the `REPLACE_WITH_EAS_PROJECT_ID` placeholder in `app.json`.
 
 ## Widget embed
 
