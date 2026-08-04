@@ -1,0 +1,29 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+.next/
+out/
+coverage/
+web-build/
+
+# Expo / native
+.expo/
+expo-env.d.ts
+.kotlin/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Tooling
+*.tsbuildinfo
+.eslintcache
+.DS_Store

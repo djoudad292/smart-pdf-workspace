@@ -1,0 +1,14 @@
+{
+  "name": "smart-pdf-widget",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Embeddable ask-your-docs widget for Smart PDF Workspace",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "esbuild": "^0.21.5",
+    "typescript": "^5"
+  }
+}
