@@ -10,7 +10,6 @@ import { WidgetPreview } from '@/components/widget-preview'
 interface Company {
   id: string
   name: string
-  slug: string
   settings?: Record<string, any>
 }
 
@@ -82,10 +81,6 @@ export function SettingsView() {
             <div className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">Company</span>
               <span className="font-medium text-foreground">{company?.name}</span>
-            </div>
-            <div className="flex justify-between border-b border-border pb-2">
-              <span className="text-muted-foreground">Widget URL slug</span>
-              <span className="font-mono text-foreground">{company?.slug}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Company ID</span>

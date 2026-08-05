@@ -8,7 +8,7 @@ interface AuthContextType {
   user: any
   workspace: any
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string, companyName: string, companySlug: string) => Promise<void>
+  register: (name: string, email: string, password: string, companyName: string) => Promise<void>
   logout: () => Promise<void>
   isOwner: boolean
 }
@@ -51,10 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const register = useCallback(
-    async (name: string, email: string, password: string, companyName: string, companySlug: string) => {
+    async (name: string, email: string, password: string, companyName: string) => {
       const data = await apiFetch('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password, companyName, companySlug }),
+        body: JSON.stringify({ name, email, password, companyName }),
       })
       setTokens(data.accessToken, data.refreshToken)
       applyWorkspace(data)

@@ -190,7 +190,7 @@ export function TeamView() {
                 Send invitation
               </button>
               <p className="text-xs text-muted-foreground">
-                The invited teammate receives a temporary password by email and signs in with your workspace slug.
+                The invited teammate receives a temporary password by email and signs in with their email address.
               </p>
             </form>
           </div>

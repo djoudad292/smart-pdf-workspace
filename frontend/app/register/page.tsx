@@ -14,7 +14,6 @@ export default function RegisterPage() {
     email: '',
     password: '',
     companyName: '',
-    companySlug: '',
   })
   const [loading, setLoading] = useState(false)
   const [waking, setWaking] = useState(false)
@@ -25,15 +24,6 @@ export default function RegisterPage() {
   const update = (key: string) => (e: any) => {
     const value = e.target.value
     setForm((prev) => ({ ...prev, [key]: value }))
-    if (key === 'companyName') {
-      setForm((prev) => ({
-        ...prev,
-        companySlug: value
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, ''),
-      }))
-    }
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -43,7 +33,7 @@ export default function RegisterPage() {
     try {
       await warmUpBackend()
       setWaking(false)
-      await register(form.name, form.email, form.password, form.companyName, form.companySlug)
+      await register(form.name, form.email, form.password, form.companyName)
       addToast('Workspace created successfully', 'success')
       router.push('/dashboard')
     } catch (err: any) {
@@ -95,14 +85,6 @@ export default function RegisterPage() {
               Company name
             </label>
             <input id="companyName" type="text" value={form.companyName} onChange={update('companyName')} placeholder="Acme Inc." required className={inputClass} />
-          </div>
-
-          <div>
-            <label htmlFor="companySlug" className="block text-sm font-medium text-foreground mb-1">
-              Workspace slug
-            </label>
-            <input id="companySlug" type="text" value={form.companySlug} onChange={update('companySlug')} placeholder="acme" required className={inputClass} />
-            <p className="mt-1 text-xs text-muted-foreground">Used in your widget URL: /widget/{form.companySlug || 'acme'}/config</p>
           </div>
 
           <button
