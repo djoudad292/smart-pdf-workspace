@@ -73,7 +73,7 @@ export default function DashboardPage() {
           </div>
           <div className="hidden items-center gap-3 sm:flex">
             <span className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-              {workspace?.name || 'Workspace'} · {workspace?.slug}
+              {workspace?.name || 'Workspace'}
             </span>
           </div>
         </header>
