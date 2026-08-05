@@ -21,7 +21,7 @@ services:
       - key: EMBEDDING_MODEL
         value: text-embedding-3-small
       - key: APP_URL
-        value: https://smart-pdf-backend.onrender.com
+        value: https://smart-pdf-backend-vyh7.onrender.com
       - key: JWT_SECRET
         sync: false
       - key: JWT_REFRESH_SECRET
@@ -41,4 +41,4 @@ services:
       - key: MAIL_FROM_EMAIL
         value: no-reply@djaouad.tech
       - key: FRONTEND_URL
-        value: https://pdf.djaouad.tech
+        value: https://docs.djaouad.tech

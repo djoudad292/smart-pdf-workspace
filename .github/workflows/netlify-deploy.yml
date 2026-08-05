@@ -25,6 +25,8 @@ jobs:
 
       - name: Install widget deps and build widget.js
         working-directory: widget
+        env:
+          WIDGET_API_URL: https://smart-pdf-backend-vyh7.onrender.com
         run: |
           npm ci
           npm run build
@@ -32,7 +34,7 @@ jobs:
       - name: Install frontend deps and build static export
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_URL: https://smart-pdf-backend.onrender.com
+          NEXT_PUBLIC_API_URL: https://smart-pdf-backend-vyh7.onrender.com
           NEXT_PUBLIC_WIDGET_URL: https://docs.djaouad.tech/widget.js
         run: |
           npm ci

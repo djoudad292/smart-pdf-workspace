@@ -53,16 +53,16 @@ npm install && npm start
 
 Repo ships ready-made configs: `render.yaml` (backend), `netlify.toml` (frontend), `.github/workflows/eas-build.yml` (mobile).
 
-- **Backend (Render):** use the Blueprint `render.yaml` (`smart-pdf-backend` service) or point Render at root dir `backend` with build `npm ci && npm run build` and start `node dist/main`. The schema auto-creates (`CREATE EXTENSION IF NOT EXISTS vector`, tables, indexes) on boot. Set the `sync: false` env vars (`DATABASE_URL`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, optional `SMTP_*`) in the Render dashboard.
-- **DB:** any Postgres with the `vector` extension (Neon, Supabase, RDS, local).
-- **Frontend (Netlify):** `netlify.toml` builds the static export from `frontend/` and publishes `out/` with the live `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_WIDGET_URL`.
-- **Widget:** built to `frontend/public/widget.js` and served by the frontend host; run `npm run build` inside `widget/` before deploying the frontend.
+- **Backend (Render):** live at `https://smart-pdf-backend-vyh7.onrender.com` (deployed from `render.yaml` blueprint; `smart-pdf-backend` service, root dir `backend`, build `npm ci && npm run build`, start `node dist/main`). Schema auto-creates on boot. Set the `sync: false` env vars (`DATABASE_URL`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, optional `SMTP_*`) in the Render dashboard.
+- **DB:** any Postgres with the `vector` extension (this deployment uses Neon, database `smartpdf`).
+- **Frontend (Netlify):** live at `https://docs.djaouad.tech` (site `smart-pdf-docs`, built from `frontend/` and published `out/`). `netlify.toml` + `.github/workflows/netlify-deploy.yml` deploy automatically on every push touching `frontend/`, `widget/`, or `netlify.toml`.
+- **Widget:** built to `frontend/public/widget.js`, served at `https://docs.djaouad.tech/widget.js`.
 - **Mobile (EAS):** `.github/workflows/eas-build.yml` builds a preview APK on every push touching `mobile/`. First-time setup: add an `EXPO_TOKEN` secret to the repo, run `cd mobile && npx eas init` once, and replace the `REPLACE_WITH_EAS_PROJECT_ID` placeholder in `app.json`.
 
 ## Widget embed
 
 ```html
-<script src="https://pdf.djaouad.tech/widget.js" data-company-id="YOUR_COMPANY_ID"></script>
+<script src="https://docs.djaouad.tech/widget.js" data-company-id="YOUR_COMPANY_ID"></script>
 ```
 
 Requires at least one document published in the dashboard.

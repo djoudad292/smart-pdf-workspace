@@ -4,5 +4,5 @@
   publish = "out"
 
 [build.environment]
-  NEXT_PUBLIC_API_URL = "https://smart-pdf-backend.onrender.com"
+  NEXT_PUBLIC_API_URL = "https://smart-pdf-backend-vyh7.onrender.com"
   NEXT_PUBLIC_WIDGET_URL = "https://docs.djaouad.tech/widget.js"
