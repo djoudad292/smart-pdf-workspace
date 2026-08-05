@@ -10,3 +10,5 @@ web-build/
 *.orig.*
 .expo-shared/
 .env
+android/
+ios/

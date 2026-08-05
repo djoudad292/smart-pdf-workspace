@@ -69,6 +69,14 @@ const SCHEMA_STATEMENTS: string[] = [
     created_at TIMESTAMPTZ DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash)`,
+  `CREATE TABLE IF NOT EXISTS ask_logs (
+    id TEXT PRIMARY KEY,
+    company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    source TEXT DEFAULT 'document',
+    question TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_ask_logs_company ON ask_logs(company_id)`,
 ];
 
 const HNSW_INDEX_STATEMENT = `CREATE INDEX IF NOT EXISTS document_chunks_embedding_idx ON document_chunks USING hnsw (embedding vector_cosine_ops)`;

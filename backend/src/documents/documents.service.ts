@@ -108,7 +108,11 @@ export class DocumentsService {
     if (doc.status !== 'ready') {
       throw new BadRequestException('This document is not ready yet. It may still be processing or have failed to extract text.');
     }
-    return this.aiService.askDocument(companyId, documentId, question.trim());
+    const result = await this.aiService.askDocument(companyId, documentId, question.trim());
+    this.store.logAsk(companyId, 'document', question.trim()).catch((err) => {
+      this.logger.warn(`Failed to log ask: ${(err as Error).message}`);
+    });
+    return result;
   }
 
   async summarize(companyId: string, documentId: string, force = false) {

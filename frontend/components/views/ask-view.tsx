@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { MessageSquare, Send, Loader2, FileText, Search, BookOpen } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { MessageSquare, Send, FileText, Search, BookOpen } from 'lucide-react'
 import type { DocumentItem } from '@/app/dashboard/page'
 import { apiFetch } from '@/lib/api'
 import { useToast } from '@/components/toast'
@@ -21,14 +21,27 @@ interface AskResult {
   sources: Source[]
 }
 
+interface HistoryItem {
+  question: string
+  result: AskResult
+  revealed: number
+}
+
 export function AskView({ documents }: Props) {
   const ready = documents.filter((d) => d.status === 'ready')
   const [selectedId, setSelectedId] = useState<string>('')
   const [question, setQuestion] = useState('')
-  const [history, setHistory] = useState<{ question: string; result: AskResult }[]>([])
-  const [loading, setLoading] = useState(false)
+  const [history, setHistory] = useState<HistoryItem[]>([])
+  const [typing, setTyping] = useState(false)
+  const revealRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const { addToast } = useToast()
+
+  useEffect(() => {
+    return () => {
+      if (revealRef.current) clearInterval(revealRef.current)
+    }
+  }, [])
 
   const ask = async () => {
     if (!selectedId) {
@@ -36,18 +49,30 @@ export function AskView({ documents }: Props) {
       return
     }
     if (!question.trim()) return
-    setLoading(true)
+    if (revealRef.current) clearInterval(revealRef.current)
+    setTyping(true)
     try {
       const result = await apiFetch<AskResult>(`/documents/${selectedId}/ask`, {
         method: 'POST',
         body: JSON.stringify({ question: question.trim() }),
       })
-      setHistory((prev) => [{ question: question.trim(), result }, ...prev])
+      const item: HistoryItem = { question: question.trim(), result, revealed: 0 }
+      setHistory((prev) => [item, ...prev])
       setQuestion('')
+      const words = result.answer.split(' ')
+      let revealed = 0
+      revealRef.current = setInterval(() => {
+        revealed += 2
+        if (revealed >= words.length) {
+          revealed = words.length
+          if (revealRef.current) clearInterval(revealRef.current)
+        }
+        setHistory((prev) => prev.map((it, idx) => (idx === 0 ? { ...it, revealed } : it)))
+      }, 30)
     } catch (err: any) {
       addToast(err.message || 'Failed to get an answer', 'error')
     } finally {
-      setLoading(false)
+      setTyping(false)
     }
   }
 
@@ -102,52 +127,63 @@ export function AskView({ documents }: Props) {
 
             <button
               onClick={ask}
-              disabled={loading || !question.trim()}
+              disabled={typing || !question.trim()}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {loading ? 'Searching the document…' : 'Ask'}
+              <Send className="h-4 w-4" />
+              Ask
             </button>
           </div>
         </div>
 
         <div className="mt-6 space-y-4">
-          {history.length === 0 && !loading && (
+          {history.length === 0 && !typing && (
             <p className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
               Ask a question and the answer, with sources, will appear here.
             </p>
           )}
 
-          {loading && (
+          {typing && (
             <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Retrieving relevant passages and generating an answer…</p>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:120ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:240ms]" />
+              </div>
+              <p className="text-sm text-muted-foreground">Searching the document and generating an answer…</p>
             </div>
           )}
 
-          {history.map((item, i) => (
-            <div key={i} className="rounded-2xl border border-border bg-card">
-              <div className="border-b border-border px-5 py-3 text-sm font-medium text-foreground">Q: {item.question}</div>
-              <div className="p-5">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.result.answer}</p>
-                {item.result.sources.length > 0 && (
-                  <div className="mt-4">
-                    <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                      <BookOpen className="h-3.5 w-3.5" /> Sources
-                    </p>
-                    <ul className="space-y-2">
-                      {item.result.sources.map((s, j) => (
-                        <li key={s.id} className="rounded-lg border border-border bg-secondary p-3">
-                          <p className="mb-1 text-[10px] text-muted-foreground">Match {(s.similarity * 100).toFixed(0)}%</p>
-                          <p className="line-clamp-2 text-xs text-foreground/80">{s.chunkText}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+          {history.map((item, i) => {
+            const visible = item.result.answer.split(' ').slice(0, item.revealed).join(' ')
+            const done = item.revealed >= item.result.answer.split(' ').length
+            return (
+              <div key={`${i}-${item.question}`} className="rounded-2xl border border-border bg-card">
+                <div className="border-b border-border px-5 py-3 text-sm font-medium text-foreground">Q: {item.question}</div>
+                <div className="p-5">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                    {visible}
+                    {!done && <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-primary/70 align-middle" />}
+                  </p>
+                  {done && item.result.sources.length > 0 && (
+                    <div className="mt-4">
+                      <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                        <BookOpen className="h-3.5 w-3.5" /> Sources
+                      </p>
+                      <ul className="space-y-2">
+                        {item.result.sources.map((s, j) => (
+                          <li key={s.id} className="rounded-lg border border-border bg-secondary p-3">
+                            <p className="mb-1 text-[10px] text-muted-foreground">Match {(s.similarity * 100).toFixed(0)}%</p>
+                            <p className="line-clamp-2 text-xs text-foreground/80">{s.chunkText}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

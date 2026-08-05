@@ -1,7 +1,7 @@
 // Smart PDF Workspace — embeddable ask-your-docs widget.
 // Dependency-free. Rendered in a shadow DOM so it never collides with host styles.
 
-const API_URL = process.env.WIDGET_API_URL || 'https://smart-pdf-backend.onrender.com';
+const API_URL = process.env.WIDGET_API_URL || 'https://smart-pdf-backend-vyh7.onrender.com';
 
 interface WidgetConfig {
   title: string;
@@ -97,8 +97,12 @@ function render(config: WidgetConfig, companyId: string): void {
   shadow.append(launcher, panel);
 
   const typing = () => {
-    const row = el('div', {}, 'spw-msg spw-assistant spw-typing');
-    row.textContent = 'Thinking…';
+    const row = el('div', {}, 'spw-msg spw-assistant');
+    const bubble = el('div', {}, 'spw-bubble spw-typing');
+    for (let i = 0; i < 3; i++) {
+      bubble.appendChild(el('span', {}, `spw-dot spw-dot-${i}`));
+    }
+    row.appendChild(bubble);
     scroll.appendChild(row);
     scroll.scrollTop = scroll.scrollHeight;
     return row;
@@ -112,6 +116,26 @@ function render(config: WidgetConfig, companyId: string): void {
     scroll.appendChild(row);
     scroll.scrollTop = scroll.scrollHeight;
     return row;
+  };
+
+  const typeOut = (row: HTMLElement, text: string, onDone: () => void) => {
+    const bubble = row.querySelector('.spw-bubble') as HTMLElement | null;
+    if (!bubble) {
+      onDone();
+      return;
+    }
+    const words = text.split(' ');
+    let i = 0;
+    const timer = setInterval(() => {
+      i += 1;
+      bubble.textContent = words.slice(0, i).join(' ');
+      scroll.scrollTop = scroll.scrollHeight;
+      if (i >= words.length) {
+        clearInterval(timer);
+        onDone();
+      }
+    }, 18);
+    return timer;
   };
 
   const ask = async () => {
@@ -138,27 +162,29 @@ function render(config: WidgetConfig, companyId: string): void {
       }
       const data = (await res.json()) as AskResult;
       typingEl.remove();
-      const row = addMessage('assistant', data.answer);
-      if (data.sources.length > 0) {
-        const sourcesBtn = el('button', { type: 'button' }, 'spw-sources-toggle');
-        sourcesBtn.textContent = `Show ${data.sources.length} source${data.sources.length > 1 ? 's' : ''}`;
-        const sourcesList = el('ul', {}, 'spw-sources');
-        sourcesList.style.display = 'none';
-        data.sources.forEach((s) => {
-          const li = el('li', {}, 'spw-source');
-          const docLabel = s.documentTitle ? ` · ${s.documentTitle}` : '';
-          li.textContent = `${s.chunkText.slice(0, 160)}${s.chunkText.length > 160 ? '…' : ''} (${Math.round(s.similarity * 100)}%${docLabel})`;
-          sourcesList.appendChild(li);
-        });
-        sourcesBtn.addEventListener('click', () => {
-          const hidden = sourcesList.style.display === 'none';
-          sourcesList.style.display = hidden ? 'block' : 'none';
-          sourcesBtn.textContent = hidden ? 'Hide sources' : `Show ${data.sources.length} source${data.sources.length > 1 ? 's' : ''}`;
-        });
-        row.appendChild(sourcesBtn);
-        row.appendChild(sourcesList);
-      }
-      scroll.scrollTop = scroll.scrollHeight;
+      const row = addMessage('assistant', '');
+      typeOut(row, data.answer, () => {
+        if (data.sources.length > 0) {
+          const sourcesBtn = el('button', { type: 'button' }, 'spw-sources-toggle');
+          sourcesBtn.textContent = `Show ${data.sources.length} source${data.sources.length > 1 ? 's' : ''}`;
+          const sourcesList = el('ul', {}, 'spw-sources');
+          sourcesList.style.display = 'none';
+          data.sources.forEach((s) => {
+            const li = el('li', {}, 'spw-source');
+            const docLabel = s.documentTitle ? ` · ${s.documentTitle}` : '';
+            li.textContent = `${s.chunkText.slice(0, 160)}${s.chunkText.length > 160 ? '…' : ''} (${Math.round(s.similarity * 100)}%${docLabel})`;
+            sourcesList.appendChild(li);
+          });
+          sourcesBtn.addEventListener('click', () => {
+            const hidden = sourcesList.style.display === 'none';
+            sourcesList.style.display = hidden ? 'block' : 'none';
+            sourcesBtn.textContent = hidden ? 'Hide sources' : `Show ${data.sources.length} source${data.sources.length > 1 ? 's' : ''}`;
+          });
+          row.appendChild(sourcesBtn);
+          row.appendChild(sourcesList);
+        }
+        scroll.scrollTop = scroll.scrollHeight;
+      });
     } catch (err) {
       typingEl.remove();
       addMessage('assistant', `Sorry, something went wrong: ${(err as Error).message}`);
@@ -253,7 +279,19 @@ function buildStyles(config: WidgetConfig): CSSStyleSheet {
     }
     .spw-user .spw-bubble { background: ${accent}; color: #fff; border-bottom-right-radius: 4px; }
     .spw-assistant .spw-bubble { background: #f1f3f6; color: #111; border-bottom-left-radius: 4px; }
-    .spw-typing { color: #888; font-size: 13px; font-style: italic; }
+    .spw-typing { display: flex; align-items: center; gap: 5px; }
+    .spw-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #9ca3af;
+      animation: spw-bounce 1.2s infinite ease-in-out;
+    }
+    .spw-dot-1 { animation-delay: 0ms; }
+    .spw-dot-2 { animation-delay: 160ms; }
+    .spw-dot-3 { animation-delay: 320ms; }
+    @keyframes spw-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
 
     .spw-sources-toggle {
       background: none; border: none; color: ${accent};

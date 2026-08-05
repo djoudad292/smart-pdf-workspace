@@ -10,6 +10,7 @@ import { useToast } from '@/components/toast'
 import { OverviewView } from '@/components/views/overview-view'
 import { DocumentsView } from '@/components/views/documents-view'
 import { AskView } from '@/components/views/ask-view'
+import { AnalyticsView } from '@/components/views/analytics-view'
 import { SummariesView } from '@/components/views/summaries-view'
 import { TeamView } from '@/components/views/team-view'
 import { SettingsView } from '@/components/views/settings-view'
@@ -85,6 +86,7 @@ export default function DashboardPage() {
             <DocumentsView documents={documents} loading={loadingDocs} onRefresh={loadDocuments} />
           )}
           {activeTab === 'ask' && <AskView documents={documents} />}
+          {activeTab === 'analytics' && <AnalyticsView />}
           {activeTab === 'summaries' && (
             <SummariesView documents={documents} onRefresh={loadDocuments} />
           )}

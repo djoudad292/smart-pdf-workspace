@@ -5,6 +5,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/exception.filter';
 import { DatabaseService } from './common/database.service';
+import { StoreService } from './common/store.service';
+import { AIService } from './ai/ai.service';
+import { seedDemoData } from './common/demo.seed';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -29,6 +32,10 @@ async function bootstrap() {
 
   const db = app.get(DatabaseService);
   await db.initialize();
+
+  const store = app.get(StoreService);
+  const ai = app.get(AIService);
+  await seedDemoData(store, ai);
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');

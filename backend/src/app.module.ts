@@ -10,6 +10,7 @@ import { AIModule } from './ai/ai.module';
 import { WidgetModule } from './widget/widget.module';
 import { DatabaseModule } from './common/database.module';
 import { HealthController } from './health/health.controller';
+import { AnalyticsController } from './analytics/analytics.controller';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { HealthController } from './health/health.controller';
     AIModule,
     WidgetModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, AnalyticsController],
   providers: [
     {
       provide: APP_GUARD,

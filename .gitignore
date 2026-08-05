@@ -27,3 +27,6 @@ expo-env.d.ts
 *.tsbuildinfo
 .eslintcache
 .DS_Store
+.netlify/
+mobile/android/
+mobile/ios/

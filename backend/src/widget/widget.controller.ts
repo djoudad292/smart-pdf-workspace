@@ -35,6 +35,8 @@ export class WidgetController {
     if (!companyId || typeof question !== 'string' || !question.trim()) {
       throw new BadRequestException('companyId and question are required');
     }
-    return this.aiService.askCompanyPublished(companyId, question.trim());
+    const result = await this.aiService.askCompanyPublished(companyId, question.trim());
+    this.store.logAsk(companyId, 'widget', question.trim()).catch(() => {});
+    return result;
   }
 }

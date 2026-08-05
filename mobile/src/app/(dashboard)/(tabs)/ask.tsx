@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react'
-import { View, Text, FlatList, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { View, Text, FlatList, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Screen, Spinner, EmptyState } from '@/components/ui'
 import { apiFetch, paginate } from '@/lib/api'
@@ -18,8 +18,53 @@ interface AskResult {
 }
 
 interface Message {
+  id: number
   role: 'user' | 'assistant'
   text: string
+  sources?: Source[]
+  reveal: number
+  showSources?: boolean
+}
+
+function TypingDots() {
+  const dots = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current
+
+  useEffect(() => {
+    const animations = dots.map((dot, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(i * 140),
+          Animated.timing(dot, { toValue: 1, duration: 300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(dot, { toValue: 0, duration: 300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.delay(140 * (3 - i)),
+        ])
+      )
+    )
+    animations.forEach((a) => a.start())
+    return () => animations.forEach((a) => a.stop())
+  }, [dots])
+
+  return (
+    <View style={{ flexDirection: 'row', gap: 5, paddingVertical: 4 }}>
+      {dots.map((dot, i) => (
+        <Animated.View
+          key={i}
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: 3.5,
+            backgroundColor: Colors.mutedForeground,
+            opacity: dot.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }),
+            transform: [{ translateY: dot.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }],
+          }}
+        />
+      ))}
+    </View>
+  )
 }
 
 export default function AskScreen() {
@@ -29,6 +74,9 @@ export default function AskScreen() {
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [asking, setAsking] = useState(false)
+  const nextId = useRef(0)
+  const revealRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const listRef = useRef<FlatList<Message>>(null)
 
   const load = useCallback(async () => {
     try {
@@ -47,6 +95,29 @@ export default function AskScreen() {
     load()
   }, [load])
 
+  useEffect(() => {
+    return () => {
+      if (revealRef.current) clearInterval(revealRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    listRef.current?.scrollToEnd({ animated: true })
+  }, [messages, asking])
+
+  const revealAnswer = (id: number, answer: string) => {
+    const words = answer.split(' ')
+    let revealed = 0
+    revealRef.current = setInterval(() => {
+      revealed += 2
+      if (revealed >= words.length) {
+        revealed = words.length
+        if (revealRef.current) clearInterval(revealRef.current)
+      }
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, reveal: revealed } : m)))
+    }, 30)
+  }
+
   const ask = async () => {
     const q = question.trim()
     if (!selectedId) {
@@ -54,7 +125,9 @@ export default function AskScreen() {
       return
     }
     if (!q) return
-    setMessages((prev) => [...prev, { role: 'user', text: q }])
+    if (revealRef.current) clearInterval(revealRef.current)
+    const userMsg: Message = { id: nextId.current++, role: 'user', text: q, reveal: -1 }
+    setMessages((prev) => [...prev, userMsg])
     setQuestion('')
     setAsking(true)
     try {
@@ -62,32 +135,63 @@ export default function AskScreen() {
         method: 'POST',
         body: JSON.stringify({ question: q }),
       })
-      setMessages((prev) => [...prev, { role: 'assistant', text: result.answer }])
+      const assistantMsg: Message = { id: nextId.current++, role: 'assistant', text: result.answer, sources: result.sources, reveal: 0 }
+      setMessages((prev) => [...prev, assistantMsg])
+      revealAnswer(assistantMsg.id, result.answer)
     } catch (err: any) {
-      setMessages((prev) => [...prev, { role: 'assistant', text: `Error: ${err?.message || 'Something went wrong'}` }])
+      const text = `Error: ${err?.message || 'Something went wrong'}`
+      setMessages((prev) => [...prev, { id: nextId.current++, role: 'assistant', text, reveal: -1 }])
     } finally {
       setAsking(false)
     }
   }
 
-  const renderMessage = ({ item }: { item: Message }) => (
-    <View style={{ alignSelf: item.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', marginBottom: 10 }}>
-      <View
-        style={{
-          backgroundColor: item.role === 'user' ? Colors.primary : Colors.muted,
-          borderRadius: 16,
-          borderBottomRightRadius: item.role === 'user' ? 4 : 16,
-          borderBottomLeftRadius: item.role === 'user' ? 16 : 4,
-          paddingHorizontal: 14,
-          paddingVertical: 10,
-        }}
-      >
-        <Text style={{ color: item.role === 'user' ? Colors.primaryForeground : Colors.foreground, fontSize: 14, lineHeight: 20 }}>
-          {item.text}
-        </Text>
+  const toggleSources = (id: number) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, showSources: !m.showSources } : m)))
+  }
+
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isUser = item.role === 'user'
+    const done = item.reveal < 0 || item.reveal >= item.text.split(' ').length
+    const visible = item.reveal >= 0 ? item.text.split(' ').slice(0, item.reveal).join(' ') : item.text
+    return (
+      <View style={{ alignSelf: isUser ? 'flex-end' : 'flex-start', maxWidth: '85%', marginBottom: 10 }}>
+        <View
+          style={{
+            backgroundColor: isUser ? Colors.primary : Colors.muted,
+            borderRadius: 16,
+            borderBottomRightRadius: isUser ? 4 : 16,
+            borderBottomLeftRadius: isUser ? 16 : 4,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
+          }}
+        >
+          <Text style={{ color: isUser ? Colors.primaryForeground : Colors.foreground, fontSize: 14, lineHeight: 20 }}>
+            {visible}
+            {item.reveal >= 0 && !done && <Text style={{ color: Colors.primary }}>▍</Text>}
+          </Text>
+        </View>
+
+        {!isUser && item.sources && item.sources.length > 0 && done && (
+          <TouchableOpacity onPress={() => toggleSources(item.id)} style={{ marginTop: 6 }}>
+            <Text style={{ color: Colors.primary, fontSize: 12, fontWeight: '600' }}>
+              {item.showSources ? 'Hide sources' : `Show ${item.sources.length} source${item.sources.length > 1 ? 's' : ''}`}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {!isUser && item.sources && item.showSources && (
+          <View style={{ marginTop: 6, gap: 4 }}>
+            {item.sources.map((s, i) => (
+              <View key={i} style={{ backgroundColor: Colors.secondary, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 8 }}>
+                <Text style={{ color: Colors.mutedForeground, fontSize: 10, marginBottom: 2 }}>Match {Math.round(s.similarity * 100)}%</Text>
+                <Text numberOfLines={2} style={{ color: Colors.foreground, fontSize: 11 }}>{s.chunkText}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
-    </View>
-  )
+    )
+  }
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: Colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -130,8 +234,9 @@ export default function AskScreen() {
             </View>
 
             <FlatList
+              ref={listRef}
               data={messages}
-              keyExtractor={(_, i) => String(i)}
+              keyExtractor={(m) => String(m.id)}
               renderItem={renderMessage}
               style={{ flex: 1 }}
               contentContainerStyle={{ paddingBottom: 12 }}
@@ -141,6 +246,12 @@ export default function AskScreen() {
                 </Text>
               }
             />
+
+            {asking && (
+              <View style={{ alignSelf: 'flex-start', backgroundColor: Colors.muted, borderRadius: 16, borderBottomLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 6 }}>
+                <TypingDots />
+              </View>
+            )}
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 }}>
               <TextInput

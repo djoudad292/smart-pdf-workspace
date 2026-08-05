@@ -376,4 +376,54 @@ export class StoreService {
       [companyId, JSON.stringify(embedding), threshold, limit],
     );
   }
+
+  // Analytics
+  async logAsk(companyId: string, source: 'document' | 'widget', question: string): Promise<void> {
+    await this.db.execute(
+      `INSERT INTO ask_logs (id, company_id, source, question) VALUES ($1, $2, $3, $4)`,
+      [crypto.randomUUID(), companyId, source, question],
+    );
+  }
+
+  async countUsersByCompany(companyId: string): Promise<number> {
+    const row = await this.db.queryOne<{ count: number }>(
+      `SELECT count(*)::int AS count FROM users WHERE company_id = $1`,
+      [companyId],
+    );
+    return row?.count ?? 0;
+  }
+
+  async countAsksByCompany(companyId: string): Promise<number> {
+    const row = await this.db.queryOne<{ count: number }>(
+      `SELECT count(*)::int AS count FROM ask_logs WHERE company_id = $1`,
+      [companyId],
+    );
+    return row?.count ?? 0;
+  }
+
+  async countAsksToday(companyId: string): Promise<number> {
+    const row = await this.db.queryOne<{ count: number }>(
+      `SELECT count(*)::int AS count FROM ask_logs WHERE company_id = $1 AND created_at >= date_trunc('day', now())`,
+      [companyId],
+    );
+    return row?.count ?? 0;
+  }
+
+  async getAsksByDay(companyId: string, days = 14): Promise<{ day: string; count: number }[]> {
+    return this.db.query<{ day: string; count: number }>(
+      `SELECT to_char(day, 'YYYY-MM-DD') AS day, count(l.id)::int AS count
+       FROM generate_series(date_trunc('day', now() - ($2::int - 1) * interval '1 day'), date_trunc('day', now()), '1 day'::interval) AS day
+       LEFT JOIN ask_logs l ON date_trunc('day', l.created_at) = day AND l.company_id = $1
+       GROUP BY day ORDER BY day`,
+      [companyId, days],
+    );
+  }
+
+  async getRecentAsks(companyId: string, limit = 10): Promise<{ question: string; source: string; createdAt: Date }[]> {
+    return this.db.query<{ question: string; source: string; createdAt: Date }>(
+      `SELECT question, source, created_at AS "createdAt" FROM ask_logs
+       WHERE company_id = $1 ORDER BY created_at DESC LIMIT $2`,
+      [companyId, limit],
+    );
+  }
 }

@@ -1,12 +1,13 @@
 'use client'
 
-import { FileText, LayoutDashboard, Files, MessageSquare, Sparkles, Users, Settings, BookOpen, LogOut } from 'lucide-react'
+import { FileText, LayoutDashboard, Files, MessageSquare, Sparkles, Users, Settings, BookOpen, BarChart3, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type TabKey =
   | 'overview'
   | 'documents'
   | 'ask'
+  | 'analytics'
   | 'summaries'
   | 'team'
   | 'settings'
@@ -16,6 +17,7 @@ const NAV: { key: TabKey; label: string; icon: any }[] = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard },
   { key: 'documents', label: 'Documents', icon: Files },
   { key: 'ask', label: 'Ask', icon: MessageSquare },
+  { key: 'analytics', label: 'Analytics', icon: BarChart3 },
   { key: 'summaries', label: 'Summaries', icon: Sparkles },
   { key: 'team', label: 'Team', icon: Users },
   { key: 'settings', label: 'Settings', icon: Settings },

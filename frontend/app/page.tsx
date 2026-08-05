@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, MessageSquare, Sparkles, Search, Globe, ArrowRight, BrainCircuit } from 'lucide-react'
+import { FileText, MessageSquare, Sparkles, Search, Globe, ArrowRight, BrainCircuit, Zap } from 'lucide-react'
+import { DemoChat } from '@/components/demo-chat'
 
 export default function LandingPage() {
   return (
@@ -55,6 +56,28 @@ export default function LandingPage() {
               Sign in
             </Link>
           </div>
+        </section>
+
+        <section className="grid items-center gap-12 pb-24 md:grid-cols-2">
+          <div>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+              <Zap className="h-3.5 w-3.5" /> Live demo
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+              Try it right now
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              This chat is powered by the real backend. Ask a question and watch it pull the
+              answer from a published document with retrieval + an LLM — the same experience
+              your visitors get from the embeddable widget.
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
+              <li className="flex gap-2"><Search className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Answers are grounded in the indexed product guide — no hallucinations.</li>
+              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Sources are retrieved semantically, not by keyword matching.</li>
+              <li className="flex gap-2"><Globe className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Embed the same experience on your site with a one-line script.</li>
+            </ul>
+          </div>
+          <DemoChat />
         </section>
 
         <section className="grid gap-6 pb-20 md:grid-cols-3">
