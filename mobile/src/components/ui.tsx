@@ -60,6 +60,7 @@ export function Button({
   loading = false,
   disabled = false,
   style,
+  icon,
 }: {
   title: string
   onPress?: () => void
@@ -67,6 +68,7 @@ export function Button({
   loading?: boolean
   disabled?: boolean
   style?: ViewStyle
+  icon?: React.ReactNode
 }) {
   const isPrimary = variant === 'primary'
   const isOutline = variant === 'outline'
@@ -90,17 +92,20 @@ export function Button({
       {loading ? (
         <ActivityIndicator size="small" color={isPrimary ? Colors.primaryForeground : Colors.foreground} />
       ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            isPrimary && { color: Colors.primaryForeground },
-            isOutline && { color: Colors.foreground },
-            isGhost && { color: Colors.primary },
-            isDanger && { color: Colors.red },
-          ]}
-        >
-          {title}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {icon}
+          <Text
+            style={[
+              styles.buttonText,
+              isPrimary && { color: Colors.primaryForeground },
+              isOutline && { color: Colors.foreground },
+              isGhost && { color: Colors.primary },
+              isDanger && { color: Colors.red },
+            ]}
+          >
+            {title}
+          </Text>
+        </View>
       )}
     </TouchableOpacity>
   )

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'reac
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { Screen, Card, Field, Button } from '@/components/ui'
+import { ScreenHeader } from '@/components/screen-header'
 import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Colors } from '@/lib/theme'
@@ -77,7 +78,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen scroll>
-      <Text style={{ color: Colors.foreground, fontSize: 20, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
+      <ScreenHeader title="Settings" subtitle="Workspace, widget and account" icon="settings" />
 
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>

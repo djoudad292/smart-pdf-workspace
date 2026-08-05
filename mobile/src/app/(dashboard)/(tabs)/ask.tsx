@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, FlatList, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Screen, Spinner, EmptyState } from '@/components/ui'
+import { ScreenHeader } from '@/components/screen-header'
 import { apiFetch, paginate } from '@/lib/api'
 import type { DocumentItem } from './index'
 import { Colors } from '@/lib/theme'
@@ -196,7 +197,11 @@ export default function AskScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: Colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen>
-        <Text style={{ color: Colors.foreground, fontSize: 20, fontWeight: '700', marginBottom: 12 }}>Ask a document</Text>
+        <ScreenHeader
+          title="Ask a document"
+          subtitle="Answers come only from your indexed PDFs"
+          icon="chatbubble-ellipses"
+        />
 
         {loading ? (
           <Spinner label="Loading documents…" />
@@ -276,9 +281,9 @@ export default function AskScreen() {
               <TouchableOpacity
                 onPress={ask}
                 disabled={asking}
-                style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', opacity: asking ? 0.5 : 1 }}
+                style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', opacity: asking || !question.trim() ? 0.5 : 1 }}
               >
-                <Ionicons name="arrow-up" size={20} color={Colors.primaryForeground} />
+                <Ionicons name="send" size={18} color={Colors.primaryForeground} />
               </TouchableOpacity>
             </View>
           </>

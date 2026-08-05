@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import * as DocumentPicker from 'expo-document-picker'
 import { Ionicons } from '@expo/vector-icons'
 import { Screen, Card, Badge, Spinner, EmptyState, Button } from '@/components/ui'
+import { ScreenHeader } from '@/components/screen-header'
 import { apiFetch, formatBytes, timeAgo, paginate } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Colors } from '@/lib/theme'
@@ -18,6 +19,16 @@ export interface DocumentItem {
   summary?: string | null
   error?: string | null
   createdAt: string
+}
+
+function StatCard({ label, value, icon, color }: { label: string; value: number; icon: any; color: string }) {
+  return (
+    <View style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.secondary, paddingVertical: 12, alignItems: 'center' }}>
+      <Ionicons name={icon} size={16} color={color} />
+      <Text style={{ color: Colors.foreground, fontSize: 20, fontWeight: '700', marginTop: 4 }}>{value}</Text>
+      <Text style={{ color: Colors.mutedForeground, fontSize: 11, marginTop: 2 }}>{label}</Text>
+    </View>
+  )
 }
 
 export default function DocumentsScreen() {
@@ -108,11 +119,14 @@ export default function DocumentsScreen() {
     return 'slate'
   }
 
+  const readyCount = documents.filter((d) => d.status === 'ready').length
+  const publishedCount = documents.filter((d) => d.published).length
+
   const renderItem = ({ item }: { item: DocumentItem }) => (
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: Colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-          <Ionicons name="document-text" size={20} color={Colors.primary} />
+          <Ionicons name={item.status === 'failed' ? 'alert-circle' : 'document-text'} size={20} color={item.status === 'failed' ? Colors.red : Colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: Colors.foreground, fontSize: 15, fontWeight: '600' }} numberOfLines={1}>
@@ -131,8 +145,9 @@ export default function DocumentsScreen() {
               <TouchableOpacity
                 onPress={() => togglePublish(item)}
                 disabled={busyId === item.id}
-                style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.muted }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.muted }}
               >
+                <Ionicons name={item.published ? 'cloud-offline-outline' : 'cloud-upload-outline'} size={14} color={item.published ? Colors.purple : Colors.foreground} />
                 <Text style={{ color: item.published ? Colors.purple : Colors.foreground, fontSize: 12, fontWeight: '600' }}>
                   {item.published ? 'Unpublish' : 'Publish'}
                 </Text>
@@ -141,16 +156,18 @@ export default function DocumentsScreen() {
             {item.status === 'ready' && (
               <TouchableOpacity
                 onPress={() => router.push({ pathname: '/summary', params: { id: item.id, title: item.title } })}
-                style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.muted }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.muted }}
               >
+                <Ionicons name="sparkles" size={14} color={Colors.primary} />
                 <Text style={{ color: Colors.primary, fontSize: 12, fontWeight: '600' }}>Summary</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
               onPress={() => remove(item)}
               disabled={busyId === item.id}
-              style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.redSoft }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.redSoft }}
             >
+              <Ionicons name="trash-outline" size={14} color={Colors.red} />
               <Text style={{ color: Colors.red, fontSize: 12, fontWeight: '600' }}>Delete</Text>
             </TouchableOpacity>
           </View>
@@ -161,16 +178,25 @@ export default function DocumentsScreen() {
 
   return (
     <Screen>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <View>
-          <Text style={{ color: Colors.foreground, fontSize: 20, fontWeight: '700' }}>Documents</Text>
-          <Text style={{ color: Colors.mutedForeground, fontSize: 13, marginTop: 2 }}>
-            {company?.name || user?.name} · {user?.email}
-          </Text>
-        </View>
+      <ScreenHeader
+        title="Smart PDF"
+        subtitle={`${company?.name || user?.name || 'Workspace'} · ${documents.length} document${documents.length === 1 ? '' : 's'}`}
+        icon="document-text"
+      />
+
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+        <StatCard label="Documents" value={documents.length} icon="folder-outline" color={Colors.primary} />
+        <StatCard label="Ready" value={readyCount} icon="checkmark-circle-outline" color={Colors.green} />
+        <StatCard label="Published" value={publishedCount} icon="globe-outline" color={Colors.purple} />
       </View>
 
-      <Button title={uploading ? 'Uploading…' : 'Upload PDF'} onPress={upload} loading={uploading} style={{ marginBottom: 16 }} />
+      <Button
+        title={uploading ? 'Uploading…' : 'Upload PDF'}
+        onPress={upload}
+        loading={uploading}
+        style={{ marginBottom: 16, flexDirection: 'row', gap: 8 }}
+        icon={<Ionicons name="cloud-upload-outline" size={18} color={Colors.primaryForeground} />}
+      />
 
       {loading ? (
         <Spinner label="Loading documents…" />
@@ -178,7 +204,7 @@ export default function DocumentsScreen() {
         <EmptyState
           icon={<Ionicons name="document-text-outline" size={40} color={Colors.mutedForeground} />}
           title="No documents yet"
-          subtitle="Upload a PDF and it will be chunked and embedded automatically."
+          subtitle="Tap “Upload PDF” to add your first document — it will be chunked and embedded automatically."
         />
       ) : (
         <FlatList
