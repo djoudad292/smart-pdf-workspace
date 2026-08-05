@@ -84,7 +84,13 @@ export class AIService {
     }
     const embedding = await this.generateEmbedding(question);
     const threshold = process.env.OPENAI_API_KEY ? 0.25 : 0.1;
-    const results = await this.store.searchChunksByDocument(documentId, embedding, 5, threshold);
+    let results = await this.store.searchChunksByDocument(documentId, embedding, 5, threshold);
+    if (!results.length) {
+      results = await this.store.searchChunksByDocument(documentId, embedding, 5, 0.05);
+    }
+    if (!results.length) {
+      results = await this.store.searchChunksByDocumentKeyword(documentId, this.extractTerms(question), 5);
+    }
     const context = results
       .map((r) => r.chunkText)
       .join('\n\n')
@@ -110,7 +116,13 @@ export class AIService {
   async askCompanyPublished(companyId: string, question: string): Promise<AskResult> {
     const embedding = await this.generateEmbedding(question);
     const threshold = process.env.OPENAI_API_KEY ? 0.25 : 0.1;
-    const results = await this.store.searchChunksByCompany(companyId, embedding, 6, threshold);
+    let results = await this.store.searchChunksByCompany(companyId, embedding, 6, threshold);
+    if (!results.length) {
+      results = await this.store.searchChunksByCompany(companyId, embedding, 6, 0.05);
+    }
+    if (!results.length) {
+      results = await this.store.searchChunksByCompanyKeyword(companyId, this.extractTerms(question), 6);
+    }
 
     if (!results.length) {
       return {
@@ -215,6 +227,15 @@ Cover the main topics, key points, and any important details. Use short bullet p
       { role: 'system', content: system },
       { role: 'user', content: `Document title: ${docTitle}\n\nDocument content:\n${text}` },
     ]);
+  }
+
+  private extractTerms(question: string): string[] {
+    const words = question
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 3);
+    return [...new Set(words)].slice(0, 6);
   }
 
   private async withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {

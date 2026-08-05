@@ -377,6 +377,43 @@ export class StoreService {
     );
   }
 
+  async searchChunksByDocumentKeyword(documentId: string, terms: string[], limit = 5) {
+    if (!terms.length) return [];
+    const params: any[] = [documentId];
+    const conds = terms.map((_, i) => {
+      params.push(`%${terms[i]}%`);
+      return `c.chunk_text ILIKE $${i + 2}`;
+    });
+    const rank = terms.map((_, i) => `(c.chunk_text ILIKE $${i + 2})::int`);
+    return this.db.query<{ id: string; chunkText: string; documentId: string; similarity: number }>(
+      `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", 1 AS similarity
+       FROM document_chunks c
+       WHERE c.document_id = $1 AND (${conds.join(' OR ')})
+       ORDER BY (${rank.join(' + ')}) DESC, c.chunk_index ASC
+       LIMIT $${params.length + 1}`,
+      [...params, limit],
+    );
+  }
+
+  async searchChunksByCompanyKeyword(companyId: string, terms: string[], limit = 6) {
+    if (!terms.length) return [];
+    const params: any[] = [companyId];
+    const conds = terms.map((_, i) => {
+      params.push(`%${terms[i]}%`);
+      return `c.chunk_text ILIKE $${i + 2}`;
+    });
+    const rank = terms.map((_, i) => `(c.chunk_text ILIKE $${i + 2})::int`);
+    return this.db.query<{ id: string; chunkText: string; documentId: string; documentTitle: string; similarity: number }>(
+      `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", d.title AS "documentTitle", 1 AS similarity
+       FROM document_chunks c
+       JOIN documents d ON d.id = c.document_id
+       WHERE c.company_id = $1 AND d.published = true AND (${conds.join(' OR ')})
+       ORDER BY (${rank.join(' + ')}) DESC, c.chunk_index ASC
+       LIMIT $${params.length + 1}`,
+      [...params, limit],
+    );
+  }
+
   // Analytics
   async logAsk(companyId: string, source: 'document' | 'widget', question: string): Promise<void> {
     await this.db.execute(
