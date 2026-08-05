@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
-import { Sidebar, type TabKey } from '@/components/sidebar'
+import { Sidebar, NAV, type TabKey } from '@/components/sidebar'
 import { MobileSidebar } from '@/components/mobile-sidebar'
 import { useToast } from '@/components/toast'
 import { OverviewView } from '@/components/views/overview-view'
@@ -66,10 +66,10 @@ export default function DashboardPage() {
       <Sidebar active={activeTab} onSelect={setActiveTab} workspaceName={workspace?.name} user={user} onLogout={logout} />
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b border-border bg-card px-6 py-4">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <MobileSidebar active={activeTab} onSelect={setActiveTab} user={user} onLogout={logout} />
-            <h1 className="text-lg font-bold text-foreground capitalize">{activeTab}</h1>
+            <h1 className="text-lg font-bold text-foreground">{NAV.find((n) => n.key === activeTab)?.label ?? 'Overview'}</h1>
           </div>
           <div className="hidden items-center gap-3 sm:flex">
             <span className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">

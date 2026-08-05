@@ -134,10 +134,20 @@ export async function apiUpload<T = any>(path: string, body: FormData): Promise<
   return res.json()
 }
 
-export async function warmUpBackend() {
-  try {
-    await fetch(`${API_URL}/health`, { method: 'GET' })
-  } catch {}
+export async function warmUpBackend(maxAttempts = 40, delayMs = 2000) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 30000)
+      const res = await fetch(`${API_URL}/api/health`, { signal: controller.signal })
+      clearTimeout(timer)
+      if (res.ok) return true
+    } catch {
+      // still booting (connection refused / timeout) — keep waiting
+    }
+    await new Promise((r) => setTimeout(r, delayMs))
+  }
+  return false
 }
 
 export function formatBytes(bytes: number) {
