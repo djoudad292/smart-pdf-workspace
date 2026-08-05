@@ -8,6 +8,12 @@ const icon: Record<string, [keyof typeof Ionicons.glyphMap, keyof typeof Ionicon
   settings: ['settings-outline', 'settings'],
 }
 
+const labels: Record<string, string> = {
+  index: 'Docs',
+  ask: 'Ask',
+  settings: 'Settings',
+}
+
 export default function TabsLayout() {
   return (
     <Tabs
@@ -15,15 +21,17 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.mutedForeground,
+        tabBarActiveBackgroundColor: Colors.primarySoft,
         tabBarStyle: {
           backgroundColor: Colors.card,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          height: 62,
+          height: 64,
           paddingBottom: 8,
-          paddingTop: 6,
+          paddingTop: 8,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarItemStyle: { borderRadius: 14, marginHorizontal: 6 },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 2 },
       }}
     >
       {(Object.keys(icon) as Array<keyof typeof icon>).map((name) => (
@@ -31,6 +39,7 @@ export default function TabsLayout() {
           key={name}
           name={name}
           options={{
+            title: labels[name],
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons name={icon[name][focused ? 1 : 0]} size={size} color={color} />
             ),
