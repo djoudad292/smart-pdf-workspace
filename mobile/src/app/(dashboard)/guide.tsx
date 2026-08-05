@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 import { getApiUrl } from '@/lib/api'
 import { Colors } from '@/lib/theme'
 
-const WIDGET_JS_URL = process.env.EXPO_PUBLIC_WIDGET_URL || 'https://pdf.djaouad.tech/widget.js'
+const WIDGET_JS_URL = process.env.EXPO_PUBLIC_WIDGET_URL || 'https://docs.djaouad.tech/widget.js'
 
 export default function GuideScreen() {
   const router = useRouter()

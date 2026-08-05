@@ -83,7 +83,7 @@ export async function warmUpBackend(
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     onStatus?.(attempt, maxAttempts)
     try {
-      const res = await fetchWithTimeout(`${API_URL}/health`, {}, 15000)
+      const res = await fetchWithTimeout(`${API_URL}/api/health`, {}, 15000)
       if (res.ok) return true
     } catch {
       // still booting or unreachable — keep polling

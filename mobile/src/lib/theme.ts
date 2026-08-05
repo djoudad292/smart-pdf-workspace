@@ -26,4 +26,4 @@ export const Colors = {
   slateSoft: 'rgba(100,116,139,0.12)',
 } as const
 
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://smart-pdf-backend.onrender.com'
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://smart-pdf-backend-vyh7.onrender.com'
