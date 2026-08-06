@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { Screen, Card, Button } from '@/components/ui'
 import { StackHeader } from '@/components/stack-header'
+import { MarkdownText } from '@/components/markdown'
 import { apiFetch } from '@/lib/api'
 import { Colors } from '@/lib/theme'
 
@@ -96,10 +97,7 @@ export default function SummaryScreen() {
         <Card>
           {summary ? (
             <View>
-              <Text style={{ color: Colors.foreground, fontSize: 14, lineHeight: 22 }}>
-                {summary.split(' ').slice(0, revealed).join(' ')}
-                {!done && <Text style={{ color: Colors.primary }}>▍</Text>}
-              </Text>
+              <MarkdownText>{summary.split(' ').slice(0, revealed).join(' ') + (done ? '' : ' ▍')}</MarkdownText>
               <View style={{ marginTop: 16 }}>
                 <Button title="Regenerate" variant="outline" onPress={() => generate(true)} loading={generating} icon={<Ionicons name="refresh" size={16} color={Colors.foreground} />} />
               </View>

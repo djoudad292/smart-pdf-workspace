@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Sparkles, Loader2, RefreshCw, FileText, Check } from 'lucide-react'
 import type { DocumentItem } from '@/app/dashboard/page'
 import { apiFetch, formatDate } from '@/lib/api'
@@ -129,7 +131,35 @@ export function SummariesView({ documents, onRefresh }: Props) {
                     Cached summary · {formatDate(documents.find((d) => d.id === selectedId)?.updatedAt)}
                   </p>
                 )}
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{summary}</p>
+                <div className="prose-sm max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ children }) => <p className="mb-2 text-sm leading-relaxed text-foreground">{children}</p>,
+                      strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                      h1: ({ children }) => <h1 className="mb-2 mt-4 text-lg font-bold text-foreground">{children}</h1>,
+                      h2: ({ children }) => <h2 className="mb-2 mt-4 text-base font-bold text-foreground">{children}</h2>,
+                      h3: ({ children }) => <h3 className="mb-2 mt-3 text-sm font-bold text-foreground">{children}</h3>,
+                      ul: ({ children }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
+                      li: ({ children }) => <li className="text-sm leading-relaxed text-foreground">{children}</li>,
+                      blockquote: ({ children }) => (
+                        <blockquote className="mb-2 border-l-2 border-primary/40 pl-3 italic text-muted-foreground">{children}</blockquote>
+                      ),
+                      hr: () => <hr className="my-3 border-border" />,
+                      code: ({ className, children }) =>
+                        className ? (
+                          <code className="my-2 block overflow-x-auto rounded-lg bg-secondary px-3 py-2 font-mono text-xs text-foreground">
+                            {children}
+                          </code>
+                        ) : (
+                          <code className="rounded bg-secondary px-1 py-0.5 font-mono text-xs text-primary">{children}</code>
+                        ),
+                    }}
+                  >
+                    {summary}
+                  </ReactMarkdown>
+                </div>
               </div>
             ) : (
               <p className="text-center text-sm text-muted-foreground">No summary yet — click Generate.</p>
