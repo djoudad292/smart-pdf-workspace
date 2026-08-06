@@ -5,7 +5,7 @@ import { AIService } from '../ai/ai.service';
 
 const DEFAULT_WIDGET = {
   title: 'Ask our documents',
-  color: '#6366f1',
+  color: '#EF4444',
   position: 'right',
 };
 

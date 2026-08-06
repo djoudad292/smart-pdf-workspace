@@ -7,7 +7,7 @@ import { getApiUrl } from '@/lib/api'
 
 const API_URL = getApiUrl()
 const DEMO_COMPANY_ID = 'demo'
-const ACCENT = '#6366f1'
+const ACCENT = '#EF4444'
 
 const SUGGESTIONS = [
   'How do I upload a PDF?',

@@ -20,7 +20,7 @@ export default function SettingsScreen() {
   const router = useRouter()
   const { company, user, logout } = useAuth()
   const [title, setTitle] = useState('Ask our documents')
-  const [color, setColor] = useState('#6366f1')
+  const [color, setColor] = useState('#EF4444')
   const [position, setPosition] = useState<'left' | 'right'>('right')
   const [saving, setSaving] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
@@ -30,7 +30,7 @@ export default function SettingsScreen() {
       const data = await apiFetch<Company>('/companies/profile')
       const w = data.settings?.widget || {}
       setTitle(w.title || 'Ask our documents')
-      setColor(w.color || '#6366f1')
+      setColor(w.color || '#EF4444')
       setPosition(w.position === 'left' ? 'left' : 'right')
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to load settings')
@@ -100,7 +100,7 @@ export default function SettingsScreen() {
 
         <Text style={{ color: Colors.foreground, fontSize: 13, fontWeight: '600', marginBottom: 6 }}>Accent color</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          {['#6366F1', '#3B82F6', '#22C55E', '#F97316', '#EF4444', '#A855F7'].map((c) => (
+          {['#EF4444', '#3B82F6', '#22C55E', '#F97316', '#A855F7'].map((c) => (
             <TouchableOpacity
               key={c}
               onPress={() => setColor(c)}

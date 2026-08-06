@@ -32,7 +32,7 @@ export async function seedDemoData(store: StoreService, ai: AIService): Promise<
         settings: {
           widget: {
             title: 'Ask about our product',
-            color: '#6366f1',
+            color: '#EF4444',
             position: 'right',
           },
         },
@@ -40,7 +40,7 @@ export async function seedDemoData(store: StoreService, ai: AIService): Promise<
       logger.log(`Created demo company (${company.id})`);
     } else {
       await store.updateCompanySettings(DEMO_COMPANY_ID, {
-        widget: { title: 'Ask about our product', color: '#6366f1', position: 'right' },
+        widget: { title: 'Ask about our product', color: '#EF4444', position: 'right' },
       });
     }
 

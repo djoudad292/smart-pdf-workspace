@@ -18,7 +18,7 @@ export function SettingsView() {
   const { addToast } = useToast()
   const [company, setCompany] = useState<Company | null>(null)
   const [title, setTitle] = useState('Ask our documents')
-  const [color, setColor] = useState('#6366f1')
+  const [color, setColor] = useState('#EF4444')
   const [position, setPosition] = useState<'left' | 'right'>('right')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -30,7 +30,7 @@ export function SettingsView() {
         setCompany(data)
         const w = data.settings?.widget || {}
         setTitle(w.title || 'Ask our documents')
-        setColor(w.color || '#6366f1')
+        setColor(w.color || '#EF4444')
         setPosition(w.position === 'left' ? 'left' : 'right')
       } catch (err: any) {
         addToast(err.message || 'Failed to load settings', 'error')

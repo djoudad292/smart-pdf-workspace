@@ -34,7 +34,7 @@ interface Analytics {
   recentAsks: RecentAsk[]
 }
 
-function Sparkline({ points, color = '#6366f1' }: { points: AskDay[]; color?: string }) {
+function Sparkline({ points, color = '#EF4444' }: { points: AskDay[]; color?: string }) {
   const values = points.map((p) => p.count)
   const max = Math.max(...values, 1)
   const w = 100
@@ -108,7 +108,7 @@ export function AnalyticsView() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-border bg-card p-5">
               <p className="text-sm text-muted-foreground">Documents</p>
-              <p className="mt-2 text-3xl font-bold text-indigo-400">{s?.documents ?? 0}</p>
+              <p className="mt-2 text-3xl font-bold text-red-400">{s?.documents ?? 0}</p>
               <p className="mt-1 text-xs text-muted-foreground">{formatBytes(s?.totalSizeBytes ?? 0)} indexed</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-5">
@@ -131,7 +131,7 @@ export function AnalyticsView() {
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-5">
               <h3 className="mb-4 text-sm font-semibold text-foreground">Questions (last 14 days)</h3>
-              <Sparkline points={data?.asksByDay ?? []} color="#6366f1" />
+              <Sparkline points={data?.asksByDay ?? []} color="#EF4444" />
               {data && data.asksByDay.length > 0 && (
                 <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                   <span>{data.asksByDay[0]?.day}</span>
