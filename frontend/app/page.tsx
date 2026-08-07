@@ -7,17 +7,17 @@ import { DemoChat } from '@/components/demo-chat'
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
             <FileText className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold text-foreground">Smart PDF Workspace</span>
         </div>
-        <nav className="flex items-center gap-3">
+        <nav className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Sign in
           </Link>
@@ -30,28 +30,28 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6">
-        <section className="py-20 text-center">
+      <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6">
+        <section className="py-16 sm:py-20 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary animate-pulse-glow">
             <FileText className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="mx-auto max-w-3xl text-5xl font-bold tracking-tight text-foreground animate-fade-in-up">
+          <h1 className="mx-auto max-w-3xl text-[clamp(2rem,6vw,3.75rem)] font-bold leading-tight tracking-tight text-foreground animate-fade-in-up">
             Ask questions across your PDFs with AI
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground animate-fade-in-up-delay-1">
+          <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg animate-fade-in-up-delay-1">
             Upload your documents, get instant summaries, and let visitors ask questions
             through an embeddable widget powered by your own knowledge base.
           </p>
-          <div className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up-delay-2">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row animate-fade-in-up-delay-2">
             <Link
               href="/register"
-              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors sm:w-auto"
             >
               Start free <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/login"
-              className="rounded-xl border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              className="flex w-full items-center justify-center rounded-xl border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors sm:w-auto"
             >
               Sign in
             </Link>

@@ -53,6 +53,7 @@ export function Sidebar({ active, onSelect, workspaceName, user, onLogout }: Sid
             <button
               key={item.key}
               onClick={() => onSelect(item.key)}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
@@ -74,7 +75,11 @@ export function Sidebar({ active, onSelect, workspaceName, user, onLogout }: Sid
             <p className="truncate text-sm font-medium text-foreground">{user?.name}</p>
             <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
           </div>
-          <button onClick={onLogout} title="Sign out" className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={onLogout}
+            aria-label="Sign out"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
             <LogOut className="h-4 w-4" />
           </button>
         </div>

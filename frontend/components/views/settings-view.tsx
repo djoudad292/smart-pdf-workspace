@@ -98,32 +98,33 @@ export function SettingsView() {
 
           <div className="space-y-4 p-5">
             <div>
-              <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+              <label htmlFor="widget-title" className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
                 <Type className="h-3.5 w-3.5" /> Widget title
               </label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
+              <input id="widget-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
             </div>
 
             <div>
-              <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+              <label htmlFor="accent-color" className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
                 <Palette className="h-3.5 w-3.5" /> Accent color
               </label>
               <div className="flex items-center gap-3">
-                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded-lg border border-border bg-secondary" />
-                <input type="text" value={color} onChange={(e) => setColor(e.target.value)} className={inputClass} />
+                <input id="accent-color" type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded-lg border border-border bg-secondary" />
+                <input type="text" value={color} onChange={(e) => setColor(e.target.value)} aria-label="Accent color hex value" className={inputClass} />
               </div>
             </div>
 
-            <div>
-              <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <fieldset>
+              <legend className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
                 <AlignLeft className="h-3.5 w-3.5" /> Position
-              </label>
+              </legend>
               <div className="grid grid-cols-2 gap-2">
                 {(['right', 'left'] as const).map((pos) => (
                   <button
                     key={pos}
                     type="button"
                     onClick={() => setPosition(pos)}
+                    aria-pressed={position === pos}
                     className={`rounded-xl border px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
                       position === pos
                         ? 'border-primary bg-primary/15 text-primary'
@@ -134,7 +135,7 @@ export function SettingsView() {
                   </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             <button
               type="submit"

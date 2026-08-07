@@ -48,7 +48,7 @@ export default function RegisterPage() {
     'w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div id="main" className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
@@ -95,7 +95,7 @@ export default function RegisterPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {waking ? 'Waking up the backend…' : 'Creating workspace…'}
+                {waking ? 'Starting server… this can take up to a minute' : 'Creating workspace…'}
               </>
             ) : (
               'Create Workspace'
@@ -109,7 +109,7 @@ export default function RegisterPage() {
             Sign in
           </Link>
         </p>
-        <p className="mt-6 text-center text-[10px] text-muted-foreground/50">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           Demo by{' '}
           <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
             djaouad.tech

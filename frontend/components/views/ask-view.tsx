@@ -88,8 +88,11 @@ export function AskView({ documents }: Props) {
 
           <div className="space-y-5 p-5">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Document</label>
+              <label htmlFor="ask-document" className="block text-sm font-medium text-foreground mb-2">
+                Document
+              </label>
               <select
+                id="ask-document"
                 value={selectedId}
                 onChange={(e) => setSelectedId(e.target.value)}
                 className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -109,8 +112,11 @@ export function AskView({ documents }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Question</label>
+              <label htmlFor="ask-question" className="block text-sm font-medium text-foreground mb-2">
+                Question
+              </label>
               <textarea
+                id="ask-question"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 onKeyDown={(e) => {
@@ -136,7 +142,7 @@ export function AskView({ documents }: Props) {
           </div>
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 space-y-4" aria-live="polite">
           {history.length === 0 && !typing && (
             <p className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
               Ask a question and the answer, with sources, will appear here.
@@ -145,10 +151,10 @@ export function AskView({ documents }: Props) {
 
           {typing && (
             <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:120ms]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:240ms]" />
+              <div className="flex items-center gap-1.5" aria-hidden="true">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
               </div>
               <p className="text-sm text-muted-foreground">Searching the document and generating an answer…</p>
             </div>
@@ -163,7 +169,7 @@ export function AskView({ documents }: Props) {
                 <div className="p-5">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                     {visible}
-                    {!done && <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-primary/70 align-middle" />}
+                    {!done && <span className="ml-0.5 inline-block h-4 w-2 bg-primary/70 align-middle" />}
                   </p>
                   {done && item.result.sources.length > 0 && (
                     <div className="mt-4">

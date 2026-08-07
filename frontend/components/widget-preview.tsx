@@ -48,6 +48,7 @@ export function WidgetPreview({ title, color, position }: WidgetPreviewProps) {
         {!open ? (
           <button
             onClick={() => setOpen(true)}
+            aria-label={`Open widget preview: ${title}`}
             className="flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105"
             style={{ backgroundColor: color }}
           >
@@ -64,7 +65,7 @@ export function WidgetPreview({ title, color, position }: WidgetPreviewProps) {
                 <MessageSquare className="h-4 w-4" />
                 <span className="text-sm font-semibold">{title}</span>
               </div>
-              <button onClick={() => setOpen(false)}>
+              <button onClick={() => setOpen(false)} aria-label="Close widget preview" className="flex h-8 w-8 items-center justify-center rounded-lg text-white hover:bg-white/10">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -97,12 +98,14 @@ export function WidgetPreview({ title, color, position }: WidgetPreviewProps) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && ask()}
                 placeholder="Ask a question…"
+                aria-label="Preview widget question"
                 className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <button
                 onClick={ask}
                 disabled={loading || !input.trim()}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-white transition-opacity disabled:opacity-40"
+                aria-label="Send message"
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-white transition-opacity disabled:opacity-40"
                 style={{ backgroundColor: color }}
               >
                 <Send className="h-4 w-4" />

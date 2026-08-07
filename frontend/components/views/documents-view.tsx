@@ -5,6 +5,7 @@ import { FileText, Upload, Loader2, Download, Trash2, RefreshCw, Globe } from 'l
 import type { DocumentItem } from '@/app/dashboard/page'
 import { apiFetch, apiUpload, formatBytes, formatDate } from '@/lib/api'
 import { useToast } from '@/components/toast'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface Props {
   documents: DocumentItem[]
@@ -21,6 +22,7 @@ const STATUS_STYLES: Record<string, string> = {
 export function DocumentsView({ documents, loading, onRefresh }: Props) {
   const [uploading, setUploading] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<DocumentItem | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const { addToast } = useToast()
 
@@ -70,7 +72,7 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
   }
 
   const remove = async (doc: DocumentItem) => {
-    if (!confirm(`Delete "${doc.title}"? This cannot be undone.`)) return
+    setConfirmDelete(null)
     setBusyId(doc.id)
     try {
       await apiFetch(`/documents/${doc.id}`, { method: 'DELETE' })
@@ -176,7 +178,7 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
                   </a>
 
                   <button
-                    onClick={() => remove(doc)}
+                    onClick={() => setConfirmDelete(doc)}
                     disabled={busyId === doc.id}
                     className="flex items-center gap-1 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-50"
                   >
@@ -188,6 +190,14 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
           </ul>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Delete document?"
+        message={confirmDelete ? `"${confirmDelete.title}" will be permanently deleted. This cannot be undone.` : ''}
+        onConfirm={() => confirmDelete && remove(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   )
 }

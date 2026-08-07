@@ -7,7 +7,7 @@ import { getApiUrl } from '@/lib/api'
 
 const API_URL = getApiUrl()
 const DEMO_COMPANY_ID = 'demo'
-const ACCENT = '#EF4444'
+const ACCENT = '#DC2626'
 
 const SUGGESTIONS = [
   'How do I upload a PDF?',
@@ -117,8 +117,8 @@ export function DemoChat() {
             setThinking(false)
             setMessages((prev) => prev.slice(0, 1))
           }}
-          className="rounded-lg p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-          title="Reset demo"
+          aria-label="Reset demo chat"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-white/85 transition-colors hover:bg-white/10 hover:text-white"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
@@ -170,12 +170,14 @@ export function DemoChat() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && ask()}
           placeholder="Ask about the product…"
+          aria-label="Ask a question about the product"
           className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         />
         <button
           onClick={() => ask()}
           disabled={thinking || revealing || !input.trim()}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white transition-opacity disabled:opacity-40"
+          aria-label="Send message"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white transition-opacity disabled:opacity-40"
           style={{ backgroundColor: ACCENT }}
         >
           <Send className="h-4 w-4" />

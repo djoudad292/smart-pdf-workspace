@@ -36,7 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div id="main" className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
@@ -85,7 +85,7 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {waking ? 'Waking up the backend…' : 'Signing in…'}
+                {waking ? 'Starting server… this can take up to a minute' : 'Signing in…'}
               </>
             ) : (
               'Sign In'
@@ -105,7 +105,7 @@ export default function LoginPage() {
             Create one
           </Link>
         </p>
-        <p className="mt-6 text-center text-[10px] text-muted-foreground/50">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           Demo by{' '}
           <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
             djaouad.tech

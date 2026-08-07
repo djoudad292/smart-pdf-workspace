@@ -5,6 +5,7 @@ import { Users, UserPlus, Loader2, Trash2, Shield, Mail } from 'lucide-react'
 import { apiFetch, formatDate } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { useToast } from '@/components/toast'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface UserRow {
   id: string
@@ -33,6 +34,7 @@ export function TeamView() {
   const [loading, setLoading] = useState(true)
   const [inviting, setInviting] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [confirmRemove, setConfirmRemove] = useState<Member | null>(null)
   const [form, setForm] = useState({ name: '', email: '' })
 
   const load = async () => {
@@ -83,7 +85,7 @@ export function TeamView() {
       addToast('Owner accounts cannot be removed', 'info')
       return
     }
-    if (!confirm(`Remove ${member.user.email} from this workspace?`)) return
+    setConfirmRemove(null)
     setRemovingId(member.user.id)
     try {
       await apiFetch(`/agents/${member.agentId}`, { method: 'DELETE' })
@@ -135,7 +137,7 @@ export function TeamView() {
                   <span className="hidden text-xs text-muted-foreground sm:block">Joined {formatDate(member.user.createdAt)}</span>
                   {isOwner && (
                     <button
-                      onClick={() => remove(member)}
+                      onClick={() => setConfirmRemove(member)}
                       disabled={removingId === member.user.id}
                       className="flex items-center gap-1 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-50"
                     >
@@ -150,6 +152,15 @@ export function TeamView() {
         </div>
       </div>
 
+      <ConfirmDialog
+        open={confirmRemove !== null}
+        title="Remove team member?"
+        message={confirmRemove ? `${confirmRemove.user.email} will lose access to this workspace immediately.` : ''}
+        confirmLabel="Remove"
+        onConfirm={() => confirmRemove && remove(confirmRemove)}
+        onCancel={() => setConfirmRemove(null)}
+      />
+
       {isOwner && (
         <div>
           <div className="rounded-2xl border border-border bg-card">
@@ -160,23 +171,31 @@ export function TeamView() {
             </div>
             <form onSubmit={invite} className="space-y-4 p-5">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Name</label>
+                <label htmlFor="invite-name" className="block text-sm font-medium text-foreground mb-1">
+                  Name
+                </label>
                 <input
+                  id="invite-name"
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Alex Rivera"
+                  autoComplete="name"
                   required
                   className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+                <label htmlFor="invite-email" className="block text-sm font-medium text-foreground mb-1">
+                  Email
+                </label>
                 <input
+                  id="invite-email"
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="alex@company.com"
+                  autoComplete="email"
                   required
                   className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />

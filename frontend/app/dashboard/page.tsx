@@ -78,7 +78,7 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main id="main" className="flex-1 overflow-y-auto p-4 sm:p-6">
           {activeTab === 'overview' && (
             <OverviewView documents={documents} loading={loadingDocs} onNavigate={setActiveTab} />
           )}
