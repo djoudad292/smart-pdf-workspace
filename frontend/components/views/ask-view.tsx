@@ -60,7 +60,13 @@ export function AskView({ documents }: Props) {
       setHistory((prev) => [item, ...prev])
       setQuestion('')
       const words = result.answer.split(' ')
+      const reduced =
+        typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
       let revealed = 0
+      if (reduced) {
+        setHistory((prev) => prev.map((it, idx) => (idx === 0 ? { ...it, revealed: words.length } : it)))
+        return
+      }
       revealRef.current = setInterval(() => {
         revealed += 2
         if (revealed >= words.length) {
@@ -82,7 +88,7 @@ export function AskView({ documents }: Props) {
         <div className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Search className="h-4 w-4 text-primary" /> Ask a document
+              <Search className="h-4 w-4 text-primary-text" /> Ask a document
             </h2>
           </div>
 
@@ -196,13 +202,13 @@ export function AskView({ documents }: Props) {
       <div className="hidden lg:block">
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
-            <MessageSquare className="h-5 w-5 text-primary" />
+            <MessageSquare className="h-5 w-5 text-primary-text" />
           </div>
           <h3 className="font-semibold text-foreground">How it works</h3>
           <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
-            <li className="flex gap-2"><FileText className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Your PDF is chunked and embedded when uploaded.</li>
-            <li className="flex gap-2"><Search className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Your question is embedded and matched to the most relevant passages.</li>
-            <li className="flex gap-2"><BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> The LLM answers strictly from those passages, with sources shown.</li>
+            <li className="flex gap-2"><FileText className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" /> Your PDF is chunked and embedded when uploaded.</li>
+            <li className="flex gap-2"><Search className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" /> Your question is embedded and matched to the most relevant passages.</li>
+            <li className="flex gap-2"><BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" /> The LLM answers strictly from those passages, with sources shown.</li>
           </ul>
         </div>
       </div>

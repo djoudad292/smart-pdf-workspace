@@ -16,11 +16,31 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLButtonElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        setOpen(false)
+        return
+      }
+      if (e.key === 'Tab') {
+        const focusables = Array.from(
+          dialogRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [],
+        )
+        if (focusables.length === 0) return
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        const active = document.activeElement
+        if (e.shiftKey && (active === first || active === null)) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
     window.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -51,7 +71,7 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
       </button>
 
       {open && (
-        <div id="mobile-nav" role="dialog" aria-modal="true" aria-label="Navigation menu" className="fixed inset-0 z-50 lg:hidden">
+        <div id="mobile-nav" ref={dialogRef} role="dialog" aria-modal="true" aria-label="Navigation menu" className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col bg-card">
             <div className="flex items-center justify-between px-6 py-5">
@@ -82,7 +102,7 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
                       'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                      isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      isActive ? 'bg-primary/15 text-primary-text' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                     )}
                   >
                     <Icon className="h-4 w-4" />

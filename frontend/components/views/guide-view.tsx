@@ -35,7 +35,7 @@ export function GuideView() {
       <div className="rounded-2xl border border-border bg-card">
         <div className="border-b border-border px-5 py-4">
           <h2 className="flex items-center gap-2 font-semibold text-foreground">
-            <BookOpen className="h-4 w-4 text-primary" /> Install the widget
+            <BookOpen className="h-4 w-4 text-primary-text" /> Install the widget
           </h2>
         </div>
         <div className="space-y-4 p-5 text-sm">
@@ -59,7 +59,7 @@ export function GuideView() {
 
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
             <p className="flex items-center gap-2 font-semibold text-foreground">
-              <Code2 className="h-4 w-4 text-primary" /> Requirements
+              <Code2 className="h-4 w-4 text-primary-text" /> Requirements
             </p>
             <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-muted-foreground">
               <li>At least one document must be <span className="text-foreground">published</span> (see the Documents tab).</li>

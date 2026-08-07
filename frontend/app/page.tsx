@@ -30,7 +30,7 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 sm:px-6 outline-none">
         <section className="py-16 sm:py-20 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary animate-pulse-glow">
             <FileText className="h-8 w-8 text-primary-foreground" />
@@ -60,7 +60,7 @@ export default function LandingPage() {
 
         <section className="grid items-center gap-12 pb-24 md:grid-cols-2">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary-text">
               <Zap className="h-3.5 w-3.5" /> Live demo
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-foreground">
@@ -72,9 +72,9 @@ export default function LandingPage() {
               your visitors get from the embeddable widget.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
-              <li className="flex gap-2"><Search className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Answers are grounded in the indexed product guide — no hallucinations.</li>
-              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Sources are retrieved semantically, not by keyword matching.</li>
-              <li className="flex gap-2"><Globe className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Embed the same experience on your site with a one-line script.</li>
+              <li className="flex gap-2"><Search className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" /> Answers are grounded in the indexed product guide — no hallucinations.</li>
+              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" /> Sources are retrieved semantically, not by keyword matching.</li>
+              <li className="flex gap-2"><Globe className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" /> Embed the same experience on your site with a one-line script.</li>
             </ul>
           </div>
           <DemoChat />
@@ -119,7 +119,7 @@ export default function LandingPage() {
                 key={feature.title}
                 className={`rounded-2xl border border-border bg-card p-6 hover:border-primary/50 transition-colors animate-fade-in-up-delay-${Math.min(i + 1, 3)}`}
               >
-                <Icon className="mb-4 h-6 w-6 text-primary" />
+                <Icon className="mb-4 h-6 w-6 text-primary-text" />
                 <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground">{feature.desc}</p>
               </div>
@@ -130,11 +130,11 @@ export default function LandingPage() {
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         Demo by{' '}
-        <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+        <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary-text hover:underline">
           djaouad.tech
         </a>{' '}
         &mdash; Built by{' '}
-        <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+        <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-text hover:underline">
           djaouad frih
         </a>
       </footer>

@@ -104,7 +104,7 @@ export function TeamView() {
         <div className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Users className="h-4 w-4 text-primary" /> Team members
+              <Users className="h-4 w-4 text-primary-text" /> Team members
             </h2>
           </div>
 
@@ -125,7 +125,7 @@ export function TeamView() {
                     <p className="flex items-center gap-2 truncate text-sm font-medium text-foreground">
                       {member.user.name}
                       {member.user.role === 'COMPANY_ADMIN' && (
-                        <span className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                        <span className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] text-primary-text">
                           <Shield className="h-3 w-3" /> Owner
                         </span>
                       )}
@@ -166,7 +166,7 @@ export function TeamView() {
           <div className="rounded-2xl border border-border bg-card">
             <div className="border-b border-border px-5 py-4">
               <h2 className="flex items-center gap-2 font-semibold text-foreground">
-                <UserPlus className="h-4 w-4 text-primary" /> Invite a teammate
+                <UserPlus className="h-4 w-4 text-primary-text" /> Invite a teammate
               </h2>
             </div>
             <form onSubmit={invite} className="space-y-4 p-5">

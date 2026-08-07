@@ -54,6 +54,8 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              name="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
@@ -69,6 +71,8 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
+              name="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
@@ -94,24 +98,24 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-3 text-center">
-          <Link href="/forgot-password" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+          <Link href="/forgot-password" className="text-sm font-medium text-primary-text hover:text-primary-text/80 transition-colors">
             Forgot your password?
           </Link>
         </p>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-medium text-primary hover:text-primary/80 transition-colors">
+          <Link href="/register" className="font-medium text-primary-text hover:text-primary-text/80 transition-colors">
             Create one
           </Link>
         </p>
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Demo by{' '}
-          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary-text hover:underline">
             djaouad.tech
           </a>{' '}
           &mdash; Built by{' '}
-          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-text hover:underline">
             djaouad frih
           </a>
         </p>

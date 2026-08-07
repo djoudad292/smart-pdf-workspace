@@ -63,28 +63,28 @@ export default function RegisterPage() {
             <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
               Your name
             </label>
-            <input id="name" type="text" value={form.name} onChange={update('name')} placeholder="Jane Doe" required className={inputClass} />
+            <input id="name" name="name" type="text" autoComplete="name" value={form.name} onChange={update('name')} placeholder="Jane Doe" required className={inputClass} />
           </div>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
               Email
             </label>
-            <input id="email" type="email" value={form.email} onChange={update('email')} placeholder="you@company.com" required className={inputClass} />
+            <input id="email" name="email" type="email" autoComplete="email" value={form.email} onChange={update('email')} placeholder="you@company.com" required className={inputClass} />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
               Password
             </label>
-            <input id="password" type="password" value={form.password} onChange={update('password')} placeholder="At least 8 characters" required minLength={8} className={inputClass} />
+            <input id="password" name="password" type="password" autoComplete="new-password" value={form.password} onChange={update('password')} placeholder="At least 8 characters" required minLength={8} className={inputClass} />
           </div>
 
           <div>
             <label htmlFor="companyName" className="block text-sm font-medium text-foreground mb-1">
               Company name
             </label>
-            <input id="companyName" type="text" value={form.companyName} onChange={update('companyName')} placeholder="Acme Inc." required className={inputClass} />
+            <input id="companyName" name="companyName" type="text" autoComplete="organization" value={form.companyName} onChange={update('companyName')} placeholder="Acme Inc." required className={inputClass} />
           </div>
 
           <button
@@ -105,17 +105,17 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
+          <Link href="/login" className="font-medium text-primary-text hover:text-primary-text/80 transition-colors">
             Sign in
           </Link>
         </p>
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Demo by{' '}
-          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary-text hover:underline">
             djaouad.tech
           </a>{' '}
           &mdash; Built by{' '}
-          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-text hover:underline">
             djaouad frih
           </a>
         </p>

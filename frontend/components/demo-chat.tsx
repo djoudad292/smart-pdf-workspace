@@ -22,6 +22,11 @@ interface Message {
 }
 
 function revealAnswer(text: string, onTick: (partial: string) => void, onDone: () => void) {
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    onTick(text)
+    onDone()
+    return null
+  }
   let i = 0
   const words = text.split(' ')
   const timer = setInterval(() => {
@@ -124,7 +129,7 @@ export function DemoChat() {
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex h-80 flex-col gap-3 overflow-y-auto p-4">
+      <div ref={scrollRef} className="flex h-80 flex-col gap-3 overflow-y-auto p-4" aria-live="polite">
         {messages.map((m, i) => (
           <div
             key={i}
@@ -139,10 +144,10 @@ export function DemoChat() {
         ))}
 
         {thinking && (
-          <div className="flex items-center gap-1.5 self-start rounded-2xl bg-secondary px-4 py-3">
-            <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:120ms]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-primary/60 [animation-delay:240ms]" />
+          <div className="flex items-center gap-1.5 self-start rounded-2xl bg-secondary px-4 py-3" aria-hidden="true">
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+            <span className="typing-dot" />
           </div>
         )}
       </div>
@@ -153,7 +158,7 @@ export function DemoChat() {
             <button
               key={s}
               onClick={() => ask(s)}
-              className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+              className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-text transition-colors hover:bg-primary/10"
             >
               {s}
             </button>
@@ -163,7 +168,7 @@ export function DemoChat() {
 
       <div className="flex items-center gap-2 border-t border-border p-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <MessageSquare className="h-4 w-4 text-primary" />
+          <MessageSquare className="h-4 w-4 text-primary-text" />
         </div>
         <input
           value={input}

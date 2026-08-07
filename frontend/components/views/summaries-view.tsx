@@ -60,7 +60,7 @@ export function SummariesView({ documents, onRefresh }: Props) {
         <div className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Sparkles className="h-4 w-4 text-primary" /> Summaries
+              <Sparkles className="h-4 w-4 text-primary-text" /> Summaries
             </h2>
           </div>
           <div className="p-5">
@@ -76,7 +76,7 @@ export function SummariesView({ documents, onRefresh }: Props) {
                         : 'border-border bg-secondary text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <FileText className="h-4 w-4 shrink-0 text-primary" />
+                    <FileText className="h-4 w-4 shrink-0 text-primary-text" />
                     <span className="min-w-0 flex-1 truncate">{doc.title}</span>
                     {doc.summary && <Check className="h-4 w-4 shrink-0 text-green-400" />}
                   </button>
@@ -121,7 +121,7 @@ export function SummariesView({ documents, onRefresh }: Props) {
               <p className="text-center text-sm text-muted-foreground">Pick a ready document to generate its summary.</p>
             ) : loading ? (
               <div className="flex items-center justify-center gap-3 py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <Loader2 className="h-5 w-5 animate-spin text-primary-text" />
                 <p className="text-sm text-muted-foreground">Reading the document and writing a summary…</p>
               </div>
             ) : summary ? (
@@ -153,7 +153,7 @@ export function SummariesView({ documents, onRefresh }: Props) {
                             {children}
                           </code>
                         ) : (
-                          <code className="rounded bg-secondary px-1 py-0.5 font-mono text-xs text-primary">{children}</code>
+                          <code className="rounded bg-secondary px-1 py-0.5 font-mono text-xs text-primary-text">{children}</code>
                         ),
                     }}
                   >

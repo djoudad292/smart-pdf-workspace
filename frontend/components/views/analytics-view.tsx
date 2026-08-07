@@ -34,7 +34,7 @@ interface Analytics {
   recentAsks: RecentAsk[]
 }
 
-function Sparkline({ points, color = '#EF4444' }: { points: AskDay[]; color?: string }) {
+function Sparkline({ points, color = 'hsl(var(--primary-text))' }: { points: AskDay[]; color?: string }) {
   const values = points.map((p) => p.count)
   const max = Math.max(...values, 1)
   const w = 100
@@ -131,7 +131,7 @@ export function AnalyticsView() {
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-5">
               <h3 className="mb-4 text-sm font-semibold text-foreground">Questions (last 14 days)</h3>
-              <Sparkline points={data?.asksByDay ?? []} color="#EF4444" />
+              <Sparkline points={data?.asksByDay ?? []} color="hsl(var(--primary-text))" />
               {data && data.asksByDay.length > 0 && (
                 <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                   <span>{data.asksByDay[0]?.day}</span>
@@ -178,7 +178,7 @@ export function AnalyticsView() {
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-5">
               <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-                <MessageSquare className="h-4 w-4 text-primary" /> Recent questions
+                <MessageSquare className="h-4 w-4 text-primary-text" /> Recent questions
               </h3>
               {data && data.recentAsks.length === 0 ? (
                 <p className="py-6 text-center text-xs text-muted-foreground">
@@ -203,7 +203,7 @@ export function AnalyticsView() {
             <div className="space-y-4">
               <div className="rounded-xl border border-border bg-card p-5">
                 <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Files className="h-4 w-4 text-primary" /> Status breakdown
+                  <Files className="h-4 w-4 text-primary-text" /> Status breakdown
                 </h3>
                 <div className="space-y-3">
                   {[
@@ -233,7 +233,7 @@ export function AnalyticsView() {
 
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
                 <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Users className="h-4 w-4 text-primary" /> Team
+                  <Users className="h-4 w-4 text-primary-text" /> Team
                 </h3>
                 <p className="text-3xl font-bold text-foreground">{s?.teamMembers ?? 0}</p>
                 <p className="mt-1 text-xs text-muted-foreground">members share this workspace</p>

@@ -9,6 +9,7 @@
   --card-foreground: 210 40% 98%;
   --primary: 0 72.2% 50.6%;
   --primary-foreground: 0 0% 100%;
+  --primary-text: 0 84.2% 60.2%;
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
   --muted: 217.2 32.6% 17.5%;
@@ -109,6 +110,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

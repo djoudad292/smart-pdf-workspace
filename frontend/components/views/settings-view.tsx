@@ -63,7 +63,7 @@ export function SettingsView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary-text" />
       </div>
     )
   }
@@ -74,7 +74,7 @@ export function SettingsView() {
         <div className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Settings className="h-4 w-4 text-primary" /> Workspace
+              <Settings className="h-4 w-4 text-primary-text" /> Workspace
             </h2>
           </div>
           <div className="space-y-3 p-5 text-sm">
@@ -92,7 +92,7 @@ export function SettingsView() {
         <form onSubmit={save} className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Palette className="h-4 w-4 text-primary" /> Ask-your-docs widget
+              <Palette className="h-4 w-4 text-primary-text" /> Ask-your-docs widget
             </h2>
           </div>
 
@@ -127,7 +127,7 @@ export function SettingsView() {
                     aria-pressed={position === pos}
                     className={`rounded-xl border px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
                       position === pos
-                        ? 'border-primary bg-primary/15 text-primary'
+                        ? 'border-primary bg-primary/15 text-primary-text'
                         : 'border-border bg-secondary text-muted-foreground hover:text-foreground'
                     }`}
                   >

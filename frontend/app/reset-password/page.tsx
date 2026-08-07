@@ -41,7 +41,7 @@ function ResetForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div id="main" className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
@@ -63,6 +63,8 @@ function ResetForm() {
               <input
                 id="password"
                 type="password"
+                name="new-password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 8 characters"
@@ -83,7 +85,7 @@ function ResetForm() {
         )}
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
+          <Link href="/login" className="font-medium text-primary-text hover:text-primary-text/80 transition-colors">
             Back to sign in
           </Link>
         </p>
@@ -94,7 +96,7 @@ function ResetForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary-text" /></div>}>
       <ResetForm />
     </Suspense>
   )

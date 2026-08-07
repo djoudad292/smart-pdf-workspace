@@ -41,7 +41,7 @@ export function OverviewView({ documents, loading, onNavigate }: Props) {
               className="rounded-2xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/50"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
-                <Icon className="h-5 w-5 text-primary" />
+                <Icon className="h-5 w-5 text-primary-text" />
               </div>
               <p className="text-2xl font-bold text-foreground">{loading ? '…' : stat.value}</p>
               <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -55,7 +55,7 @@ export function OverviewView({ documents, loading, onNavigate }: Props) {
           <h2 className="font-semibold text-foreground">Recent documents</h2>
           <button
             onClick={() => onNavigate('documents')}
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
+            className="flex items-center gap-1 text-sm font-medium text-primary-text hover:text-primary-text/80"
           >
             View all <ArrowUpRight className="h-4 w-4" />
           </button>
@@ -103,7 +103,7 @@ export function OverviewView({ documents, loading, onNavigate }: Props) {
       </div>
 
       <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-5">
-        <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+        <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary-text" />
         <div className="text-sm">
           <p className="font-semibold text-foreground">Publish a document to power the ask-your-docs widget</p>
           <p className="mt-1 text-muted-foreground">
