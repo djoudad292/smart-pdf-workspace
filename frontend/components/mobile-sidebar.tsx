@@ -65,9 +65,9 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
         aria-label="Open navigation menu"
         aria-expanded={open}
         aria-controls="mobile-nav"
-        className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-card text-foreground lg:hidden"
+        className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-colors hover:bg-primary/90 lg:hidden"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-6 w-6" />
       </button>
 
       {open && (
