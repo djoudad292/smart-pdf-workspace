@@ -86,8 +86,8 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-8 text-center">
+    <div className="space-y-4 sm:space-y-5">
+      <div className="rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-5 text-center sm:p-8">
         <Upload className="mx-auto mb-3 h-8 w-8 text-primary-text" />
         <h2 className="font-semibold text-foreground">Upload a PDF</h2>
         <p className="mt-1 text-sm text-muted-foreground">PDFs up to 10MB. Text is extracted, chunked, and embedded automatically.</p>

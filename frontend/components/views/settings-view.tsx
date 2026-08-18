@@ -69,18 +69,18 @@ export function SettingsView() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="space-y-6">
+    <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+      <div className="space-y-4 sm:space-y-6">
         <div className="rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-5 py-4">
+          <div className="border-b border-border px-4 py-3 sm:px-5 sm:py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
               <Settings className="h-4 w-4 text-primary-text" /> Workspace
             </h2>
           </div>
-          <div className="space-y-3 p-5 text-sm">
+          <div className="space-y-3 p-4 text-sm sm:p-5">
             <div className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">Company</span>
-              <span className="font-medium text-foreground">{company?.name}</span>
+              <span className="min-w-0 truncate font-medium text-foreground">{company?.name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Company ID</span>

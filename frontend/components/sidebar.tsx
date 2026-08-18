@@ -34,7 +34,7 @@ interface SidebarProps {
 
 export function Sidebar({ active, onSelect, workspaceName, user, onLogout }: SidebarProps) {
   return (
-    <aside className="hidden w-64 flex-col border-r border-border bg-card lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
       <div className="flex items-center gap-2 px-6 py-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
           <FileText className="h-5 w-5 text-primary-foreground" />

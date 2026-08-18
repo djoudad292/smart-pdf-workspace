@@ -65,20 +65,20 @@ export default function DashboardPage() {
     <div className="flex min-h-screen bg-background">
       <Sidebar active={activeTab} onSelect={setActiveTab} workspaceName={workspace?.name} user={user} onLogout={logout} />
 
-      <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <MobileSidebar active={activeTab} onSelect={setActiveTab} user={user} onLogout={logout} />
-            <h1 className="text-lg font-bold text-foreground">{NAV.find((n) => n.key === activeTab)?.label ?? 'Overview'}</h1>
-          </div>
-          <div className="hidden items-center gap-3 sm:flex">
-            <span className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-              {workspace?.name || 'Workspace'}
-            </span>
-          </div>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile header - visible only on small screens */}
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-sm lg:hidden">
+          <MobileSidebar active={activeTab} onSelect={setActiveTab} user={user} onLogout={logout} />
+          <h1 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
+            {NAV.find((n) => n.key === activeTab)?.label ?? 'Overview'}
+          </h1>
+          <span className="hidden shrink-0 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground sm:inline-block">
+            {workspace?.name || 'Workspace'}
+          </span>
         </header>
 
-        <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-6 outline-none">
+        {/* Main content */}
+        <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-6 outline-none">
           {activeTab === 'overview' && (
             <OverviewView documents={documents} loading={loadingDocs} onNavigate={setActiveTab} />
           )}

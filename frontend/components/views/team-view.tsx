@@ -99,17 +99,17 @@ export function TeamView() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
       <div className="lg:col-span-2">
         <div className="rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-5 py-4">
+          <div className="border-b border-border px-4 py-3 sm:px-5 sm:py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
               <Users className="h-4 w-4 text-primary-text" /> Team members
             </h2>
           </div>
 
           {loading ? (
-            <div className="space-y-3 p-5">
+            <div className="space-y-3 p-4 sm:p-5">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="h-14 animate-pulse rounded-xl bg-secondary" />
               ))}
@@ -117,7 +117,7 @@ export function TeamView() {
           ) : (
             <ul className="divide-y divide-border">
               {members.map((member) => (
-                <li key={member.user.id} className="flex items-center gap-3 px-5 py-3.5">
+                <li key={member.user.id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                     {member.user.name.charAt(0).toUpperCase()}
                   </div>

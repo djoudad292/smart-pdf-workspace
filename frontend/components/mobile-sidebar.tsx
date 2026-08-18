@@ -21,26 +21,7 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false)
-        return
-      }
-      if (e.key === 'Tab') {
-        const focusables = Array.from(
-          dialogRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [],
-        )
-        if (focusables.length === 0) return
-        const first = focusables[0]
-        const last = focusables[focusables.length - 1]
-        const active = document.activeElement
-        if (e.shiftKey && (active === first || active === null)) {
-          e.preventDefault()
-          last.focus()
-        } else if (!e.shiftKey && active === last) {
-          e.preventDefault()
-          first.focus()
-        }
-      }
+      if (e.key === 'Escape') setOpen(false)
     }
     window.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -52,92 +33,101 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
     }
   }, [open])
 
-  const select = (tab: TabKey) => {
+  function select(tab: TabKey) {
     onSelect(tab)
     setOpen(false)
   }
 
   return (
     <>
+      {/* Hamburger button - always visible on mobile */}
       <button
         ref={openRef}
         onClick={() => setOpen(true)}
-        aria-label="Open navigation menu"
-        aria-expanded={open}
-        aria-controls="mobile-nav"
-        className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-colors hover:bg-primary/90 lg:hidden"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-colors hover:bg-secondary active:scale-95 lg:hidden"
+        aria-label="Open menu"
       >
-        <Menu className="h-6 w-6" />
+        <Menu className="h-5 w-5" />
       </button>
 
+      {/* Backdrop */}
       {open && (
-        <div id="mobile-nav" ref={dialogRef} role="dialog" aria-modal="true" aria-label="Navigation menu" className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col bg-card">
-            <div className="flex items-center justify-between px-6 py-5">
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-                  <FileText className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-sm font-bold text-foreground">Smart PDF</span>
-              </div>
-              <button
-                ref={closeRef}
-                onClick={() => setOpen(false)}
-                aria-label="Close navigation menu"
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </button>
+        <div
+          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm transition-opacity lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Sidebar panel */}
+      <div
+        ref={dialogRef}
+        className={cn(
+          'fixed inset-y-0 left-0 z-[70] flex w-72 flex-col bg-card shadow-2xl transition-transform duration-250 ease-out lg:hidden',
+          open ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
+              <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-
-            <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
-              {NAV.map((item) => {
-                const Icon = item.icon
-                const isActive = active === item.key
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => select(item.key)}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={cn(
-                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-primary/15 text-foreground'
-                        : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </button>
-                )
-              })}
-            </nav>
-
-            <div className="border-t border-border p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                  {(user?.name || 'U').charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{user?.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setOpen(false)
-                    onLogout()
-                  }}
-                  aria-label="Sign out"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-foreground">Smart PDF</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.companyName || 'Workspace'}</p>
             </div>
           </div>
+          <button
+            ref={closeRef}
+            onClick={() => setOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-95"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-      )}
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          <div className="space-y-0.5">
+            {NAV.map((item) => {
+              const Icon = item.icon
+              const isActive = active === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => select(item.key)}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all',
+                    isActive
+                      ? 'bg-primary/15 text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground active:bg-secondary/80'
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'h-5 w-5 shrink-0 transition-colors',
+                      isActive ? 'text-primaryText' : 'text-muted-foreground'
+                    )}
+                  />
+                  {item.label}
+                </button>
+              )
+            })}
+          </div>
+        </nav>
+
+        {/* User / Logout */}
+        <div className="border-t border-border p-3">
+          <button
+            onClick={onLogout}
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:bg-secondary/80"
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            Log out
+          </button>
+        </div>
+      </div>
     </>
   )
 }

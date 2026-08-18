@@ -31,14 +31,14 @@ export function GuideView() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-4 sm:space-y-6">
       <div className="rounded-2xl border border-border bg-card">
-        <div className="border-b border-border px-5 py-4">
+        <div className="border-b border-border px-4 py-3 sm:px-5 sm:py-4">
           <h2 className="flex items-center gap-2 font-semibold text-foreground">
             <BookOpen className="h-4 w-4 text-primary-text" /> Install the widget
           </h2>
         </div>
-        <div className="space-y-4 p-5 text-sm">
+        <div className="space-y-4 p-4 text-sm sm:p-5">
           <p className="text-muted-foreground">
             Paste this one line anywhere in your website&apos;s <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">body</code>.
             Visitors will see a floating ask-your-docs assistant that answers from your published documents.

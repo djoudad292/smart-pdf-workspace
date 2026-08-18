@@ -30,15 +30,15 @@ export function OverviewView({ documents, loading, onNavigate }: Props) {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
             <button
               key={stat.label}
               onClick={() => onNavigate(stat.tab)}
-              className="rounded-2xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/50"
+              className="rounded-2xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/50 sm:p-5"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
                 <Icon className="h-5 w-5 text-primary-text" />

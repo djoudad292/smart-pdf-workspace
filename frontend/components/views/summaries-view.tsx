@@ -55,15 +55,15 @@ export function SummariesView({ documents, onRefresh }: Props) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
       <div className="lg:col-span-1">
         <div className="rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-5 py-4">
+          <div className="border-b border-border px-4 py-3 sm:px-5 sm:py-4">
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
               <Sparkles className="h-4 w-4 text-primary-text" /> Summaries
             </h2>
           </div>
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <label className="block text-sm font-medium text-foreground mb-2">Document</label>
             <ul className="space-y-2">
               {ready.map((doc) => (
