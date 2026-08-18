@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BookOpen, Copy, Check, Code2 } from 'lucide-react'
+import { BookOpen, Copy, Check, Code2, Smartphone, Download } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { getApiUrl } from '@/lib/api'
 import { useToast } from '@/components/toast'
@@ -79,6 +79,39 @@ export function GuideView() {
           <p>2. It fetches the widget config and the list of published documents from the backend.</p>
           <p>3. When a visitor asks something, the script calls <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">POST /widget/ask</code> and renders the answer with sources.</p>
           <p>4. Styling (title, color, position) comes from your Settings tab.</p>
+        </div>
+      </div>
+
+      {/* Mobile App Download */}
+      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <Smartphone className="h-6 w-6 text-primaryText" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-foreground">Get the Mobile App</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Upload PDFs, ask questions, and manage your workspace from your Android device.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <a
+                href="/app-release.apk"
+                download
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                Download APK
+              </a>
+              <a
+                href="https://github.com/djoudad292/smart-pdf-workspace/tree/main/mobile"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              >
+                View Source
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
