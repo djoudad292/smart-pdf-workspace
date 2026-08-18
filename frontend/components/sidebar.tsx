@@ -56,7 +56,7 @@ export function Sidebar({ active, onSelect, workspaceName, user, onLogout }: Sid
               aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-primary/15 text-primary-text' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                isActive ? 'bg-primary/15 text-primaryText' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
               )}
             >
               <Icon className="h-4 w-4" />

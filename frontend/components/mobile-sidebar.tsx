@@ -101,8 +101,10 @@ export function MobileSidebar({ active, onSelect, user, onLogout }: MobileSideba
                     onClick={() => select(item.key)}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                      isActive ? 'bg-primary/15 text-primary-text' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary/15 text-foreground'
+                        : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
                     )}
                   >
                     <Icon className="h-4 w-4" />
