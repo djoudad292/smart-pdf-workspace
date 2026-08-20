@@ -2,6 +2,10 @@
 
 Multi-tenant workspace to upload PDFs, ask AI questions about them (with sources), generate summaries, and publish an embeddable ask-your-docs widget — built exactly like [AI Virtual Receptionist](https://github.com/djoudad292/ai-virtual-receptionist).
 
+**Live demo:** [docs.djaouad.tech](https://docs.djaouad.tech)
+
+![Smart PDF Workspace — ask questions across your PDFs with cited sources](screenshots/pdf-workspace-hero.png)
+
 ## Architecture
 
 | Part | Stack | Host |
