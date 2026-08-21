@@ -139,7 +139,7 @@ export function TeamView() {
                     <button
                       onClick={() => setConfirmRemove(member)}
                       disabled={removingId === member.user.id}
-                      className="flex items-center gap-1 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-lg border border-red-500/40 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger hover:bg-danger/20 disabled:opacity-50"
                     >
                       {removingId === member.user.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                       Remove

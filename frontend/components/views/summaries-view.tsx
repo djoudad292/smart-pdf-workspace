@@ -78,7 +78,7 @@ export function SummariesView({ documents, onRefresh }: Props) {
                   >
                     <FileText className="h-4 w-4 shrink-0 text-primary-text" />
                     <span className="min-w-0 flex-1 truncate">{doc.title}</span>
-                    {doc.summary && <Check className="h-4 w-4 shrink-0 text-green-400" />}
+                    {doc.summary && <Check className="h-4 w-4 shrink-0 text-success" />}
                   </button>
                 </li>
               ))}

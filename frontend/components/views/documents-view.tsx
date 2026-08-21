@@ -14,9 +14,9 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  ready: 'bg-green-500/15 text-green-400 border-green-500/30',
+  ready: 'bg-success/15 text-success border-green-500/30',
   processing: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  failed: 'bg-red-500/15 text-red-400 border-red-500/30',
+  failed: 'bg-danger/15 text-danger border-red-500/30',
 }
 
 export function DocumentsView({ documents, loading, onRefresh }: Props) {
@@ -134,7 +134,7 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
                   <p className="text-xs text-muted-foreground">
                     {formatBytes(doc.sizeBytes)} · {doc.pageCount} pages · {formatDate(doc.createdAt)}
                   </p>
-                  {doc.error && <p className="mt-1 text-xs text-red-400">{doc.error}</p>}
+                  {doc.error && <p className="mt-1 text-xs text-danger">{doc.error}</p>}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -150,7 +150,7 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
                       disabled={busyId === doc.id}
                       className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
                         doc.published
-                          ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                          ? 'border-green-500/40 bg-success/10 text-success'
                           : 'border-border bg-secondary text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -180,7 +180,7 @@ export function DocumentsView({ documents, loading, onRefresh }: Props) {
                   <button
                     onClick={() => setConfirmDelete(doc)}
                     disabled={busyId === doc.id}
-                    className="flex items-center gap-1 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                    className="flex items-center gap-1 rounded-lg border border-red-500/40 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger hover:bg-danger/20 disabled:opacity-50"
                   >
                     <Trash2 className="h-3 w-3" /> Delete
                   </button>

@@ -18,6 +18,8 @@
       }
     ],
     "paths": {
+      "@supportai/ui": ["../packages/ui/src/index.ts"],
+      "@supportai/ui/*": ["../packages/ui/src/*"],
       "@/*": ["./*"]
     }
   },

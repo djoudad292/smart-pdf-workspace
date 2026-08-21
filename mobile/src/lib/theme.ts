@@ -8,7 +8,7 @@ export const Colors = {
   mutedForeground: '#94A3B8',
   border: '#1F2937',
   primary: '#EF4444',
-  primaryForeground: '#FFFFFF',
+  primaryForeground: '#0C0709',
   primarySoft: 'rgba(239,68,68,0.12)',
   green: '#22C55E',
   greenSoft: 'rgba(34,197,94,0.12)',

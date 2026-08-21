@@ -12,9 +12,9 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  ready: 'bg-green-500/15 text-green-400 border-green-500/30',
+  ready: 'bg-success/15 text-success border-green-500/30',
   processing: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  failed: 'bg-red-500/15 text-red-400 border-red-500/30',
+  failed: 'bg-danger/15 text-danger border-red-500/30',
 }
 
 export function OverviewView({ documents, loading, onNavigate }: Props) {

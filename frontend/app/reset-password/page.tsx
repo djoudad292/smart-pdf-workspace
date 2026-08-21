@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, type FormEvent, useEffect, Suspense } from 'react'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { apiFetch } from '@/lib/api'
-import { FileText, Loader2 } from 'lucide-react'
+import { FileText, CheckCircle2 } from 'lucide-react'
 import { useToast } from '@/components/toast'
+import { Button, Input, Card } from '@supportai/ui/web'
 
 function ResetForm() {
   const [password, setPassword] = useState('')
@@ -40,64 +41,45 @@ function ResetForm() {
     }
   }
 
-  return (
-    <div id="main" className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <FileText className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Choose a new password</h1>
-        </div>
-
-        {done ? (
-          <div className="rounded-xl border border-green-500/50 bg-green-500/10 p-4 text-sm text-green-400">
-            Password updated successfully.
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-                New password
-              </label>
-              <input
-                id="password"
-                type="password"
-                name="new-password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 characters"
-                required
-                minLength={8}
-                className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || !token}
-              className="flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update password'}
-            </button>
-          </form>
-        )}
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/login" className="font-medium text-primary-text hover:text-primary-text/80 transition-colors">
-            Back to sign in
-          </Link>
-        </p>
+  if (done) {
+    return (
+      <div className="flex flex-col items-center text-center py-4">
+        <CheckCircle2 className="h-12 w-12 text-success mb-3" />
+        <h2 className="text-lg font-semibold text-fg">Password updated</h2>
+        <p className="mt-2 text-sm text-fg-muted">You can now sign in with your new password.</p>
+        <Link href="/login" className="mt-4 text-sm font-medium text-primary hover:underline">
+          Back to sign in
+        </Link>
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Input id="password" label="New Password" type="password" name="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" required minLength={8} />
+      <Button type="submit" loading={loading} fullWidth>Reset Password</Button>
+    </form>
   )
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary-text" /></div>}>
-      <ResetForm />
-    </Suspense>
+    <div id="main" className="flex min-h-screen items-center justify-center bg-bg p-4 outline-none">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+            <FileText className="h-6 w-6 text-primary-fg" />
+          </div>
+          <h1 className="text-2xl font-bold text-fg">Choose a new password</h1>
+          <p className="mt-2 text-sm text-fg-muted">Make it strong and unique</p>
+        </div>
+
+        <Card className="p-6">
+          <Suspense fallback={<div className="py-8 text-center text-sm text-fg-muted">Loading…</div>}>
+            <ResetForm />
+          </Suspense>
+        </Card>
+      </div>
+    </div>
   )
 }

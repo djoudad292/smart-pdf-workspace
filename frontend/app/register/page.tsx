@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { warmUpBackend } from '@/lib/api'
-import { FileText, Loader2 } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { useToast } from '@/components/toast'
+import { Button, Input } from '@supportai/ui/web'
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -44,80 +45,32 @@ export default function RegisterPage() {
     }
   }
 
-  const inputClass =
-    'w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary'
-
   return (
-    <div id="main" className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div id="main" tabIndex={-1} className="flex min-h-screen items-center justify-center bg-bg p-4 outline-none">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <FileText className="h-6 w-6 text-primary-foreground" />
+            <FileText className="h-6 w-6 text-primary-fg" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Create your workspace</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Start asking questions about your PDFs</p>
+          <h1 className="text-2xl font-bold text-fg">Create your workspace</h1>
+          <p className="mt-2 text-sm text-fg-muted">Start asking questions across your documents</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-              Your name
-            </label>
-            <input id="name" name="name" type="text" autoComplete="name" value={form.name} onChange={update('name')} placeholder="Jane Doe" required className={inputClass} />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-              Email
-            </label>
-            <input id="email" name="email" type="email" autoComplete="email" value={form.email} onChange={update('email')} placeholder="you@company.com" required className={inputClass} />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-              Password
-            </label>
-            <input id="password" name="password" type="password" autoComplete="new-password" value={form.password} onChange={update('password')} placeholder="At least 8 characters" required minLength={8} className={inputClass} />
-          </div>
-
-          <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-foreground mb-1">
-              Company name
-            </label>
-            <input id="companyName" name="companyName" type="text" autoComplete="organization" value={form.companyName} onChange={update('companyName')} placeholder="Acme Inc." required className={inputClass} />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {waking ? 'Starting server… this can take up to a minute' : 'Creating workspace…'}
-              </>
-            ) : (
-              'Create Workspace'
-            )}
-          </button>
+          <Input id="name" label="Full Name" type="text" name="name" autoComplete="name" value={form.name} onChange={update('name')} placeholder="John Doe" required />
+          <Input id="email" label="Email" type="email" name="email" autoComplete="email" value={form.email} onChange={update('email')} placeholder="you@company.com" required />
+          <Input id="password" label="Password" type="password" name="password" autoComplete="new-password" value={form.password} onChange={update('password')} placeholder="Enter your password" required />
+          <Input id="companyName" label="Company Name" type="text" name="companyName" autoComplete="organization" value={form.companyName} onChange={update('companyName')} placeholder="Acme Inc." required />
+          <Button type="submit" loading={loading} fullWidth>
+            {waking ? 'Waking up the assistant…' : 'Create Workspace'}
+          </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-fg-muted">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-primary-text hover:text-primary-text/80 transition-colors">
+          <Link href="/login" className="font-medium text-primary hover:underline">
             Sign in
           </Link>
-        </p>
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Demo by{' '}
-          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="text-primary-text hover:underline">
-            djaouad.tech
-          </a>{' '}
-          &mdash; Built by{' '}
-          <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-text hover:underline">
-            djaouad frih
-          </a>
         </p>
       </div>
     </div>

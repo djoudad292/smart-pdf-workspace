@@ -108,7 +108,7 @@ export function AnalyticsView() {
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <div className="rounded-xl border border-border bg-card p-3.5 sm:p-5">
               <p className="text-xs text-muted-foreground sm:text-sm">Documents</p>
-              <p className="mt-2 text-2xl font-bold text-red-400 sm:text-3xl">{s?.documents ?? 0}</p>
+              <p className="mt-2 text-2xl font-bold text-danger sm:text-3xl">{s?.documents ?? 0}</p>
               <p className="mt-1 text-xs text-muted-foreground">{formatBytes(s?.totalSizeBytes ?? 0)} indexed</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-3.5 sm:p-5">
@@ -150,11 +150,11 @@ export function AnalyticsView() {
                   {readyPercent > 12 && `Ready ${readyPercent}%`}
                 </div>
                 <div
-                  className="flex items-center justify-center bg-blue-500 text-xs font-medium text-white transition-all"
+                  className="flex items-center justify-center bg-primary text-xs font-medium text-white transition-all"
                   style={{ width: `${s && s.documents > 0 ? (s.processingDocuments / s.documents) * 100 : 0}%` }}
                 />
                 <div
-                  className="flex items-center justify-center bg-red-500 text-xs font-medium text-white transition-all"
+                  className="flex items-center justify-center bg-danger text-xs font-medium text-white transition-all"
                   style={{ width: `${s && s.documents > 0 ? (s.failedDocuments / s.documents) * 100 : 0}%` }}
                 />
               </div>
@@ -164,11 +164,11 @@ export function AnalyticsView() {
                   <p className="text-[11px] text-muted-foreground">Ready</p>
                 </div>
                 <div className="rounded-lg bg-secondary/60 p-3">
-                  <p className="text-xl font-bold text-blue-400">{s?.processingDocuments ?? 0}</p>
+                  <p className="text-xl font-bold text-primary">{s?.processingDocuments ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">Processing</p>
                 </div>
                 <div className="rounded-lg bg-secondary/60 p-3">
-                  <p className="text-xl font-bold text-red-400">{s?.failedDocuments ?? 0}</p>
+                  <p className="text-xl font-bold text-danger">{s?.failedDocuments ?? 0}</p>
                   <p className="text-[11px] text-muted-foreground">Failed</p>
                 </div>
               </div>
@@ -208,8 +208,8 @@ export function AnalyticsView() {
                 <div className="space-y-3">
                   {[
                     { label: 'Ready', value: s?.readyDocuments ?? 0, color: 'bg-emerald-500', icon: FileText },
-                    { label: 'Processing', value: s?.processingDocuments ?? 0, color: 'bg-blue-500', icon: Files },
-                    { label: 'Failed', value: s?.failedDocuments ?? 0, color: 'bg-red-500', icon: Files },
+                    { label: 'Processing', value: s?.processingDocuments ?? 0, color: 'bg-primary', icon: Files },
+                    { label: 'Failed', value: s?.failedDocuments ?? 0, color: 'bg-danger', icon: Files },
                     { label: 'Published live', value: s?.publishedDocuments ?? 0, color: 'bg-violet-500', icon: Layers },
                   ].map((row) => {
                     const Icon = row.icon
