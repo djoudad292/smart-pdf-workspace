@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { MessageSquare, Send, Sparkles, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
