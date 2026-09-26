@@ -1,292 +1,273 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { FileText, MessageSquare, Sparkles, Search, Globe, ArrowRight, BrainCircuit, Zap, Smartphone, Download, Code2, Shield, Bot } from 'lucide-react'
-import { DemoChat } from '@/components/demo-chat'
+import { Check, Copy, Download } from 'lucide-react'
+import { GuestPlayground } from '@/components/guest-playground'
+import { WakeSplash } from '@/components/wake-splash'
 
-const APK_URL = "https://github.com/djoudad292/smart-pdf-workspace/releases/download/latest-apk-pdf/smart-pdf.apk";
+const APK_URL =
+  'https://github.com/djoudad292/smart-pdf-workspace/releases/download/latest-apk-pdf/smart-pdf.apk'
+const PORTFOLIO_URL = 'https://djaouad.is-a.dev'
+const WIDGET_SNIPPET = `<script src="${process.env.NEXT_PUBLIC_WIDGET_URL || 'https://docs.djaouad.tech/widget.js'}" data-company-id="YOUR_COMPANY_ID"></script>`
 
-const features = [
+const STEPS = [
   {
-    icon: FileText,
-    title: 'Upload PDFs',
-    desc: 'Store files in Postgres, extract text, and index every paragraph into searchable embeddings.',
+    title: 'Upload a PDF',
+    body: 'Drop in a file. The text is extracted, split into passages and turned into embeddings.',
   },
   {
-    icon: MessageSquare,
-    title: 'Ask your documents',
-    desc: 'Get grounded answers with sources from your own knowledge base — no hallucinated facts.',
+    title: 'Ask in plain language',
+    body: 'Your question is embedded too, matched against the passages, and answered only from them.',
   },
   {
-    icon: Sparkles,
-    title: 'Instant summaries',
-    desc: 'One click generates a concise summary of any uploaded document.',
+    title: 'Ship it to your site',
+    body: 'Publish a document and the chat widget answers visitors from your own content.',
   },
-  {
-    icon: Search,
-    title: 'Smart retrieval',
-    desc: 'Semantic search finds the most relevant passages, not just keywords.',
-  },
-  {
-    icon: Globe,
-    title: 'Embeddable widget',
-    desc: 'A one-line snippet puts an ask-your-docs assistant on any website.',
-  },
-  {
-    icon: BrainCircuit,
-    title: 'Multi-tenant by design',
-    desc: 'Every company gets an isolated workspace, agent invites, and its own settings.',
-  },
-];
+]
 
-const mobileFeatures = [
-  { icon: FileText, title: "Interactive PDF Reader", desc: "View and browse your workspace documents on any screen size." },
-  { icon: Zap, title: "Instant Mobile Search", desc: "Ask questions on the go with real-time vector search." },
-  { icon: Shield, title: "Secure Document Store", desc: "Your sensitive files are safely stored in your private Postgres instance." },
-  { icon: Globe, title: "Access Anywhere", desc: "Stay connected to your knowledge base from anywhere in the world." },
-];
+const CAPABILITIES = [
+  'Grounded answers with the matching passage shown under each one',
+  'One-click summaries of any document',
+  'Semantic search, not keyword matching',
+  'A chat widget you embed with one script tag',
+  'Isolated workspace per company, with team invites',
+  'Android app for reading and asking on the go',
+]
+
+const FAQ = [
+  {
+    q: 'Do I need an account to try it?',
+    a: 'No. The sandbox above runs in your browser. Create a workspace only when you want your files to persist.',
+  },
+  {
+    q: 'What happens to what I upload in the sandbox?',
+    a: 'It stays in that sandbox, is capped at a few files of a few megabytes, and is deleted when the session expires.',
+  },
+  {
+    q: 'Where are the files kept?',
+    a: 'In your own Postgres instance. Files are never shared between companies, and only documents you publish are visible to the widget.',
+  },
+]
+
+function CopyableSnippet() {
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(WIDGET_SNIPPET)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  return (
+    <div className="min-w-0 rounded-md border border-stone-300 bg-stone-900">
+      <div className="flex items-center justify-between border-b border-stone-700 px-3 py-1.5">
+        <span className="font-mono text-[11px] text-stone-400">index.html</span>
+        <button
+          onClick={copy}
+          className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[11px] text-stone-300 transition-colors hover:text-white"
+        >
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          {copied ? 'copied' : 'copy'}
+        </button>
+      </div>
+      <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-relaxed text-stone-200">
+        {WIDGET_SNIPPET}
+      </pre>
+    </div>
+  )
+}
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-bg text-fg">
-      {/* Header */}
-      <header className="fixed top-0 z-50 w-full border-b border-slate-800 bg-bg backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-violet flex items-center justify-center">
-              <FileText className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-lg font-bold text-fg">Smart PDF Workspace</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <a href={APK_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-lg border border-green-500/30 bg-success/10 px-3 py-1.5 text-xs font-medium text-success hover:bg-success/20 transition-colors">
-              <Download className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Android App</span>
+    <>
+      <WakeSplash />
+      <div className="min-h-screen bg-stone-50 text-stone-900">
+      <header className="sticky top-0 z-40 border-b border-stone-200 bg-stone-50/95 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <span className="text-sm font-semibold tracking-tight">Smart PDF Workspace</span>
+          <nav className="flex items-center gap-4 text-sm">
+            <a href="#try" className="hidden text-stone-600 transition-colors hover:text-stone-900 sm:inline">
+              Try it
             </a>
-            <Link href="/login" className="text-sm text-fg-muted hover:text-white transition-colors">Sign in</Link>
-            <Link href="/register" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-strong transition-colors">Get started</Link>
-          </div>
+            <a href="#widget" className="hidden text-stone-600 transition-colors hover:text-stone-900 sm:inline">
+              Widget
+            </a>
+            <Link href="/login" className="text-stone-600 transition-colors hover:text-stone-900">
+              Sign in
+            </Link>
+            <Link
+              href="/register"
+              className="rounded-md bg-stone-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+            >
+              Create account
+            </Link>
+          </nav>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative px-4 pt-24 pb-12 sm:pt-32 sm:pb-20">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/5 blur-3xl" />
-        </div>
+      <main id="main" tabIndex={-1} className="outline-none">
+        <section className="px-4 pb-10 pt-14 sm:pt-20">
+          <div className="mx-auto max-w-5xl">
+            <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Ask your PDFs real questions and get answers with the source passage.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-stone-600">
+              Upload documents, ask questions in normal language, and get answers built only from
+              your own content. Publish a document and the same assistant answers visitors on your
+              website.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a
+                href="#try"
+                className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-800"
+              >
+                Try it now — no signup
+              </a>
+              <Link
+                href="/register"
+                className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-900 transition-colors hover:border-stone-900"
+              >
+                Create a workspace
+              </Link>
+            </div>
+            <p className="mt-3 text-xs text-stone-500">
+              The demo sandbox below is live. No account, no card.
+            </p>
+          </div>
+        </section>
 
-        <div className="relative mx-auto max-w-7xl">
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
-            {/* Left - Text */}
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                <Zap className="h-3 w-3" />
-                Ask questions across your PDFs with AI
-              </div>
-              <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-5xl">
-                Smart PDF Workspace
-                <span className="block text-primary">Ask, summarize, and embed your docs</span>
-              </h1>
-              <p className="mb-6 max-w-lg text-base text-fg-muted sm:text-lg">
-                Upload your documents, get instant summaries, and let visitors ask questions
-                through an embeddable widget powered by your own knowledge base.
+        <section id="try" className="border-t border-stone-200 px-4 py-10 sm:py-14">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-6 max-w-2xl">
+              <h2 className="text-xl font-semibold tracking-tight">Try the product right here</h2>
+              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                This opens a throwaway workspace with two sample documents already indexed. Ask a
+                question, upload your own PDF, or generate a summary. Every visitor gets their own
+                sandbox — no login, nothing shared, deleted automatically.
               </p>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Link href="/register" className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-strong transition-colors">
-                  Start free
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link href="/login" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-6 py-3 text-sm font-semibold text-fg-secondary hover:bg-surface transition-colors">
-                  Sign in
-                </Link>
-              </div>
             </div>
+            <GuestPlayground />
+          </div>
+        </section>
 
-            {/* Right - Phone Mockup with Download */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[280px] sm:max-w-sm">
-                {/* Phone Frame */}
-                <div className="relative rounded-[2.5rem] border-4 border-border bg-surface p-2 shadow-2xl shadow-blue-500/10">
-                  {/* Notch */}
-                  <div className="mx-auto mb-3 h-5 w-24 rounded-full bg-surface" />
-                  
-                  {/* Screen */}
-                  <div className="overflow-hidden rounded-[2rem] bg-bg">
-                    {/* Status Bar */}
-                    <div className="flex items-center justify-between px-6 py-2 text-[10px] text-fg-muted">
-                      <span>9:41</span>
-                      <div className="flex items-center gap-1">
-                        <div className="h-2.5 w-4 rounded-sm border border-border-strong">
-                          <div className="h-full w-3/4 rounded-sm bg-success" />
-                        </div>
-                      </div>
-                    </div>
+        <section className="border-t border-stone-200 px-4 py-10 sm:py-14">
+          <div className="mx-auto max-w-5xl">
+            <h2 className="text-xl font-semibold tracking-tight">How it works</h2>
+            <ol className="mt-6 grid gap-6 sm:grid-cols-3">
+              {STEPS.map((step, i) => (
+                <li key={step.title}>
+                  <p className="font-mono text-xs text-stone-400">0{i + 1}</p>
+                  <h3 className="mt-1 text-sm font-semibold">{step.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
 
-                    {/* Chat Preview */}
-                    <div className="px-3 pb-4 space-y-3">
-                      {/* Bot Header */}
-                      <div className="flex items-center gap-2 px-2 py-2 border-b border-slate-800">
-                        <div className="h-6 w-6 rounded-full bg-primary-strong/20 flex items-center justify-center">
-                          <Bot className="h-3 w-3 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-[11px] font-semibold text-white">SmartPDF AI</p>
-                          <p className="text-[9px] text-success">Online</p>
-                        </div>
-                      </div>
-
-                      {/* Messages */}
-                      <div className="space-y-2">
-                        <div className="flex gap-1.5">
-                          <div className="h-5 w-5 rounded-full bg-primary-strong/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <Bot className="h-2.5 w-2.5 text-primary" />
-                          </div>
-                          <div className="rounded-xl rounded-bl-md bg-surface border border-border px-3 py-2 text-[10px] text-fg leading-relaxed max-w-[80%]">
-                            Hi! Ask me anything about your uploaded PDF documents. I'll summarize or answer instantly.
-                          </div>
-                        </div>
-
-                        {/* Quick Replies */}
-                        <div className="flex flex-wrap gap-1 ml-6">
-                          {["Summarize Doc", "Search Knowledge Base", "Close Workspace"].map((b) => (
-                            <span key={b} className="rounded-full bg-primary-strong/20 border border-blue-500/30 px-2 py-0.5 text-[8px] font-medium text-blue-300">
-                              {b}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* User Message */}
-                        <div className="flex justify-end">
-                          <div className="rounded-xl rounded-br-md bg-primary-strong px-3 py-2 text-[10px] text-white max-w-[75%]">
-                            Give me a summary of Chapter 2
-                          </div>
-                        </div>
-
-                        {/* Bot Response */}
-                        <div className="flex gap-1.5">
-                          <div className="h-5 w-5 rounded-full bg-primary-strong/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <Bot className="h-2.5 w-2.5 text-primary" />
-                          </div>
-                          <div className="rounded-xl rounded-bl-md bg-surface border border-border px-3 py-2 text-[10px] text-fg leading-relaxed max-w-[80%]">
-                            Based on your guide, Chapter 2 details the deployment process and environment variables setup.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+        <section className="border-t border-stone-200 px-4 py-10 sm:py-14">
+          <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-2">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">What it does</h2>
+              <ul className="mt-5 space-y-2.5">
+                {CAPABILITIES.map((item) => (
+                  <li key={item} className="flex gap-2.5 text-sm leading-relaxed text-stone-700">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Good to know</h2>
+              <dl className="mt-5 space-y-4">
+                {FAQ.map((item) => (
+                  <div key={item.q}>
+                    <dt className="text-sm font-medium">{item.q}</dt>
+                    <dd className="mt-1 text-sm leading-relaxed text-stone-600">{item.a}</dd>
                   </div>
-                </div>
-
-                {/* Floating Download Card */}
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 sm:-right-8 sm:left-auto sm:translate-x-0 w-[calc(100%-2rem)] sm:w-auto">
-                  <a href={APK_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 shadow-xl hover:border-green-500/30 transition-all group">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/20">
-                      <Download className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white group-hover:text-success transition-colors">Download for Android</p>
-                      <p className="text-[11px] text-fg-muted">Free · 15 MB · Android 8.0+</p>
-                    </div>
-                  </a>
-                </div>
-              </div>
+                ))}
+              </dl>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Mobile App Section */}
-      <section className="px-4 py-16 sm:py-24 border-t border-slate-800/40">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-green-500/20 bg-success/10 px-3 py-1 text-xs font-medium text-success">
-              <Smartphone className="h-3 w-3" />
-              Native Android App
+        <section id="widget" className="border-t border-stone-200 px-4 py-10 sm:py-14">
+          <div className="mx-auto grid max-w-5xl items-center gap-8 lg:grid-cols-2">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Put it on your own site</h2>
+              <p className="mt-3 text-sm leading-relaxed text-stone-600">
+                Publish a document and your visitors can ask questions about it from a chat bubble
+                on your site. No iframe, no build step — one script tag, and the title, colour and
+                side are configurable from settings.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-stone-600">
+                Only published documents are ever exposed. Everything else stays inside your
+                workspace.
+              </p>
             </div>
-            <h2 className="mb-3 text-2xl font-bold sm:text-3xl">Manage Documents from Your Phone</h2>
-            <p className="mx-auto max-w-lg text-fg-muted">
-              Your smart PDF workspace, now in your pocket. View documents, ask questions with cited sources, and generate summaries on the go.
-            </p>
-          </div>
+            <CopyableSnippet />
+          </div>        </section>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {mobileFeatures.map((f) => (
-              <div key={f.title} className="rounded-xl border border-slate-800 bg-surface p-5 transition-colors hover:border-border">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
-                  <f.icon className="h-5 w-5 text-success" />
-                </div>
-                <h3 className="mb-2 text-sm font-semibold">{f.title}</h3>
-                <p className="text-xs leading-relaxed text-fg-muted">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <a href={APK_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all">
-              <Download className="h-4 w-4" />
-              Download the Android App
+        <section className="border-t border-stone-200 px-4 py-10 sm:py-14">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold">Android app</h2>
+              <p className="mt-1 text-sm text-stone-600">
+                Read your documents and ask questions from your phone. Free, 15 MB.
+              </p>
+            </div>
+            <a
+              href={APK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-900 transition-colors hover:border-stone-900"
+            >
+              <Download className="h-4 w-4" /> Download the APK
             </a>
-            <p className="mt-3 text-xs text-fg-muted">Free forever · Auto-updates via GitHub · 15 MB</p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Try Live Demo */}
-      <section className="px-4 py-16 sm:py-20 border-t border-slate-800/40">
-        <div className="mx-auto max-w-6xl grid items-center gap-12 md:grid-cols-2">
-          <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <Zap className="h-3 w-3" /> Live Demo
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-white">Try it right now</h2>
-            <p className="mt-4 text-base text-fg-muted">
-              This chat is powered by the real backend. Ask a question and watch it pull the answer from a published document with retrieval + an LLM — the same experience your visitors get from the embeddable widget.
+        <section className="border-t border-stone-200 px-4 py-12">
+          <div className="mx-auto max-w-5xl text-center">
+            <h2 className="text-xl font-semibold tracking-tight">
+              Want this running on your own documents?
+            </h2>
+            <p className="mx-auto mt-2 max-w-lg text-sm text-stone-600">
+              Create a workspace, upload a PDF, and ask the first question in under a minute.
             </p>
-          </div>
-          <DemoChat />
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="px-4 py-16 sm:py-20 border-t border-slate-800/40">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-4 text-center text-2xl font-bold sm:text-3xl">Everything you need to master your PDFs</h2>
-          <p className="mb-12 text-center text-fg-muted max-w-xl mx-auto">Upload PDFs, retrieve semantically with source citations, generate summaries and invite your team.</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title} className="rounded-xl border border-slate-800 bg-surface p-6 transition-colors hover:border-border">
-                <f.icon className="mb-3 h-8 w-8 text-primary" />
-                <h3 className="mb-2 text-base font-semibold">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-fg-muted">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-4 py-16 sm:py-20 border-t border-slate-800/40">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-slate-800 bg-surface p-8 text-center sm:p-12">
-          <h2 className="mb-4 text-2xl font-bold sm:text-3xl">Ready to automate document research?</h2>
-          <p className="mb-6 text-fg-muted">Create a free account, add your knowledge base, and start asking questions in minutes. No credit card needed.</p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link href="/register" className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-white hover:bg-primary-strong transition-colors">
-              Get Started Free
-              <ArrowRight className="h-4 w-4" />
+            <Link
+              href="/register"
+              className="mt-5 inline-block rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+            >
+              Create a workspace
             </Link>
-            <a href={APK_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-8 py-3 text-sm font-semibold text-fg-secondary hover:bg-surface transition-colors">
-              <Download className="h-4 w-4" />
-              Download Android App
-            </a>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 px-4 py-8 text-center text-sm text-fg-muted">
-        &copy; {new Date().getFullYear()} Smart PDF Workspace &mdash; Built by{' '}
-        <a href="https://djaouad.tech" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">djaouad frih</a>
+      <footer className="border-t border-stone-200 bg-white px-4 py-5">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-xs text-stone-500">
+          <p>&copy; {new Date().getFullYear()} Smart PDF Workspace</p>
+          <p>
+            Built by Djaouad Frih &middot; Want this for your business?{' '}
+            <a
+              href={PORTFOLIO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-stone-900 underline underline-offset-2 hover:text-red-700"
+            >
+              djaouad.is-a.dev
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
+    </>
   )
 }

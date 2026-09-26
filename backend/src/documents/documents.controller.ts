@@ -15,6 +15,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { Response } from 'express';
 import { DocumentsService } from './documents.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -25,7 +26,7 @@ export class DocumentsController {
   constructor(private documentsService: DocumentsService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
   upload(@Req() req: any, @UploadedFile() file?: Express.Multer.File) {
     return this.documentsService.upload(req.user.companyId, file);
   }

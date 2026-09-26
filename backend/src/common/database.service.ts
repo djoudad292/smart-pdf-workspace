@@ -24,6 +24,9 @@ const SCHEMA_STATEMENTS: string[] = [
     updated_at TIMESTAMPTZ DEFAULT now()
   )`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INT DEFAULT 0`,
+  `ALTER TABLE companies ADD COLUMN IF NOT EXISTS is_guest BOOLEAN DEFAULT false`,
+  `ALTER TABLE companies ADD COLUMN IF NOT EXISTS guest_expires_at TIMESTAMPTZ`,
+  `CREATE INDEX IF NOT EXISTS idx_companies_guest_expiry ON companies(guest_expires_at) WHERE is_guest = true`,
   `CREATE TABLE IF NOT EXISTS agents (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -58,6 +61,7 @@ const SCHEMA_STATEMENTS: string[] = [
     embedding vector(1536),
     created_at TIMESTAMPTZ DEFAULT now()
   )`,
+  `ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_sample BOOLEAN DEFAULT false`,
   `CREATE INDEX IF NOT EXISTS idx_document_chunks_document ON document_chunks(document_id)`,
   `CREATE INDEX IF NOT EXISTS idx_documents_company ON documents(company_id)`,
   `CREATE TABLE IF NOT EXISTS password_resets (

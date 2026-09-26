@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { StoreService } from '../common/store.service';
-
-const EMBEDDING_DIM = 1536;
+import { embedLocally } from '../common/embeddings';
 
 export interface AskResult {
   answer: string;
@@ -48,32 +47,7 @@ export class AIService {
   }
 
   private embedLocally(text: string): number[] {
-    const vector = new Array(EMBEDDING_DIM).fill(0);
-    const normalized = text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
-    const grams: string[] = [];
-    for (const word of normalized.split(/\s+/)) {
-      if (!word) continue;
-      grams.push(word);
-      if (word.length > 2) {
-        grams.push(word.slice(0, 5));
-        grams.push(word.slice(-5));
-      }
-    }
-    const joined = normalized.replace(/\s+/g, '');
-    for (let n = 3; n <= 5; n++) {
-      for (let i = 0; i + n <= joined.length; i++) {
-        grams.push(joined.slice(i, i + n));
-      }
-    }
-    for (const g of grams) {
-      const h = hashString(g);
-      const idx = Math.abs(h) % EMBEDDING_DIM;
-      vector[idx] += (h & 1) === 0 ? 1 : -1;
-    }
-    let mag = 0;
-    for (const v of vector) mag += v * v;
-    mag = Math.sqrt(mag) || 1;
-    return vector.map((v) => v / mag);
+    return embedLocally(text);
   }
 
   // RAG Q&A over a single document
@@ -107,26 +81,35 @@ export class AIService {
     return {
       answer:
         answer ||
+        this.buildExtractiveAnswer(results) ||
         "I couldn't find relevant information in this document to answer that question. Try rephrasing, or ask about something covered in the document.",
       sources: results.map((r) => ({ chunkText: r.chunkText, similarity: r.similarity })),
     };
   }
 
-  // RAG Q&A across all published documents of a company (used by the public widget)
-  async askCompanyPublished(companyId: string, question: string): Promise<AskResult> {
+  // RAG Q&A across a company's documents. The public widget passes
+  // publishedOnly = true; the isolated guest sandbox searches its own
+  // unpublished documents.
+  async askCompanyDocuments(
+    companyId: string,
+    question: string,
+    publishedOnly = true,
+  ): Promise<AskResult> {
     const embedding = await this.generateEmbedding(question);
     const threshold = process.env.OPENAI_API_KEY ? 0.25 : 0.1;
-    let results = await this.store.searchChunksByCompany(companyId, embedding, 6, threshold);
+    let results = await this.store.searchChunksByCompany(companyId, embedding, 6, threshold, publishedOnly);
     if (!results.length) {
-      results = await this.store.searchChunksByCompany(companyId, embedding, 6, 0.05);
+      results = await this.store.searchChunksByCompany(companyId, embedding, 6, 0.05, publishedOnly);
     }
     if (!results.length) {
-      results = await this.store.searchChunksByCompanyKeyword(companyId, this.extractTerms(question), 6);
+      results = await this.store.searchChunksByCompanyKeyword(companyId, this.extractTerms(question), 6, publishedOnly);
     }
 
     if (!results.length) {
       return {
-        answer: "I couldn't find relevant information to answer that question. Try rephrasing, or ask about something covered in the published documents.",
+        answer: publishedOnly
+          ? "I couldn't find relevant information to answer that question. Try rephrasing, or ask about something covered in the published documents."
+          : "I couldn't find relevant information to answer that question. Try rephrasing, or ask about something covered in these documents.",
         sources: [],
       };
     }
@@ -140,9 +123,32 @@ export class AIService {
     return {
       answer:
         answer ||
-        "I couldn't find relevant information to answer that question. Try rephrasing, or ask about something covered in the published documents.",
+        this.buildExtractiveAnswer(results) ||
+        (publishedOnly
+          ? "I couldn't find relevant information to answer that question. Try rephrasing, or ask about something covered in the published documents."
+          : "I couldn't find relevant information to answer that question. Try rephrasing, or ask about something covered in these documents."),
       sources: results.map((r) => ({ chunkText: r.chunkText, similarity: r.similarity, documentTitle: r.documentTitle })),
     };
+  }
+
+  /**
+   * Fallback used when the LLM cannot be reached (out of credits, provider
+   * down). Retrieval already produced the right passages, so quote them
+   * instead of pretending nothing was found.
+   */
+  private buildExtractiveAnswer(
+    results: { chunkText: string; documentTitle?: string | null }[],
+  ): string | null {
+    if (!results.length) return null;
+    const passages = results
+      .slice(0, 2)
+      .map((r) => {
+        const text = r.chunkText.replace(/\s+/g, ' ').trim();
+        const clipped = text.length > 600 ? `${text.slice(0, 600).trimEnd()}…` : text;
+        return r.documentTitle ? `[${r.documentTitle}] ${clipped}` : clipped;
+      })
+      .join('\n\n');
+    return `Here is what the documents say about that:\n\n${passages}`;
   }
 
   // Generate a summary for a document
@@ -267,12 +273,4 @@ Cover the main topics, key points, and any important details. Use short bullet p
       ),
     ]);
   }
-}
-
-function hashString(str: string): number {
-  let h = 5381;
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) + h + str.charCodeAt(i)) | 0;
-  }
-  return h;
 }

@@ -9,6 +9,7 @@ import { AgentsModule } from './agents/agents.module';
 import { DocumentsModule } from './documents/documents.module';
 import { AIModule } from './ai/ai.module';
 import { WidgetModule } from './widget/widget.module';
+import { GuestModule } from './guest/guest.module';
 import { DatabaseModule } from './common/database.module';
 import { HealthController } from './health/health.controller';
 import { AnalyticsController } from './analytics/analytics.controller';
@@ -41,6 +42,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
     DocumentsModule,
     AIModule,
     WidgetModule,
+    GuestModule,
   ],
   controllers: [HealthController, AnalyticsController],
   providers: [

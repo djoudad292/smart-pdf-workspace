@@ -15,7 +15,7 @@ export class DocumentsService {
     private aiService: AIService,
   ) {}
 
-  async upload(companyId: string, file?: Express.Multer.File) {
+  async upload(companyId: string, file?: Express.Multer.File, options: { published?: boolean } = {}) {
     if (!file || !file.buffer) {
       throw new BadRequestException('No file uploaded');
     }
@@ -50,7 +50,7 @@ export class DocumentsService {
       content,
       pageCount,
       status: content ? 'processing' : 'failed',
-      published: false,
+      published: options.published === true,
       error: content ? null : 'No readable text was extracted. The PDF may be scanned or image-only.',
     });
 
@@ -162,7 +162,8 @@ export class DocumentsService {
     }
   }
 
-  private chunkContent(content: string): string[] {
+  /** Split extracted text into retrieval-sized chunks. */
+  chunkContent(content: string): string[] {
     const paragraphs = content.split(/\n\s*\n/);
     const chunks: string[] = [];
     let currentChunk = '';

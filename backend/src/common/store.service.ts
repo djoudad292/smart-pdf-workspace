@@ -46,6 +46,7 @@ export type StoredDocument = {
   summary?: string | null;
   published: boolean;
   error?: string | null;
+  isSample?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -183,6 +184,88 @@ export class StoreService {
     );
   }
 
+  async countDocumentsByCompany(companyId: string): Promise<number> {
+    const row = await this.db.queryOne<{ count: string }>(
+      `SELECT COUNT(*)::int AS count FROM documents WHERE company_id = $1`,
+      [companyId],
+    );
+    return Number(row?.count ?? 0);
+  }
+
+  /** Documents uploaded by the visitor, excluding the pre-seeded samples. */
+  async countUploadedDocuments(companyId: string): Promise<number> {
+    const row = await this.db.queryOne<{ count: string }>(
+      `SELECT COUNT(*)::int AS count FROM documents WHERE company_id = $1 AND is_sample = false`,
+      [companyId],
+    );
+    return Number(row?.count ?? 0);
+  }
+
+  // Guest sandboxes
+  /**
+   * Create an isolated, throwaway company for a public demo session. Guest
+   * companies are flagged (`is_guest`) so the cleanup job can reclaim them
+   * once `guest_expires_at` passes.
+   */
+  async createGuestCompany(data: { id: string; name: string; slug: string; expiresAt: Date }): Promise<void> {
+    await this.db.execute(
+      `INSERT INTO companies (id, name, slug, plan, settings, is_guest, guest_expires_at, created_at, updated_at)
+       VALUES ($1, $2, $3, 'guest', '{}'::jsonb, true, $4, now(), now())`,
+      [data.id, data.name, data.slug, data.expiresAt],
+    );
+  }
+
+  async findGuestCompany(id: string): Promise<{ id: string; name: string; expiresAt: Date } | null> {
+    return this.db.queryOne<{ id: string; name: string; expiresAt: Date }>(
+      `SELECT id, name, guest_expires_at AS "expiresAt" FROM companies
+       WHERE id = $1 AND is_guest = true`,
+      [id],
+    );
+  }
+
+  async findExpiredGuestCompanyIds(limit = 50): Promise<string[]> {
+    const rows = await this.db.query<{ id: string }>(
+      `SELECT id FROM companies
+       WHERE is_guest = true AND guest_expires_at IS NOT NULL AND guest_expires_at <= now()
+       ORDER BY guest_expires_at ASC LIMIT $1`,
+      [limit],
+    );
+    return rows.map((r) => r.id);
+  }
+
+  /**
+   * Hard-delete a company and everything that references it (documents,
+   * chunks, users, agents, ask logs, password resets). Used to reclaim
+   * sandboxed guest workspaces after their TTL expires.
+   */
+  async deleteCompanyCascade(companyId: string): Promise<void> {
+    await this.db.execute(
+      `DELETE FROM ask_logs WHERE company_id = $1`,
+      [companyId],
+    );
+    await this.db.execute(
+      `DELETE FROM document_chunks WHERE company_id = $1`,
+      [companyId],
+    );
+    await this.db.execute(
+      `DELETE FROM documents WHERE company_id = $1`,
+      [companyId],
+    );
+    await this.db.execute(
+      `DELETE FROM agents WHERE company_id = $1`,
+      [companyId],
+    );
+    await this.db.execute(
+      `DELETE FROM users WHERE company_id = $1`,
+      [companyId],
+    );
+    await this.db.execute(
+      `DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE company_id = $1)`,
+      [companyId],
+    );
+    await this.db.execute('DELETE FROM companies WHERE id = $1', [companyId]);
+  }
+
   async updateCompanySettings(id: string, settings: Record<string, any>): Promise<StoredCompany | null> {
     return this.db.queryOne<StoredCompany>(
       `UPDATE companies SET settings = settings || $2::jsonb, updated_at = now()
@@ -242,9 +325,9 @@ export class StoreService {
   // Documents
   async createDocument(data: Omit<StoredDocument, 'createdAt' | 'updatedAt'>): Promise<StoredDocument> {
     const rows = await this.db.query<StoredDocument>(
-      `INSERT INTO documents (id, company_id, title, filename, mime, size_bytes, file, content, page_count, status, summary, published, error, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, now(), now())
-       RETURNING id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, created_at AS "createdAt", updated_at AS "updatedAt"`,
+      `INSERT INTO documents (id, company_id, title, filename, mime, size_bytes, file, content, page_count, status, summary, published, error, is_sample, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, COALESCE($14, false), now(), now())
+        RETURNING id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"`,
       [
         data.id,
         data.companyId,
@@ -259,6 +342,7 @@ export class StoreService {
         data.summary || null,
         data.published,
         data.error || null,
+        data.isSample === true,
       ],
     );
     return rows[0];
@@ -266,7 +350,7 @@ export class StoreService {
 
   async findDocumentById(id: string): Promise<StoredDocument | null> {
     return this.db.queryOne<StoredDocument>(
-      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, created_at AS "createdAt", updated_at AS "updatedAt"
+      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
        FROM documents WHERE id = $1`,
       [id],
     );
@@ -279,8 +363,8 @@ export class StoreService {
       [companyId],
     );
     const rows = await this.db.query<StoredDocument>(
-      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, created_at AS "createdAt", updated_at AS "updatedAt"
-       FROM documents WHERE company_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
+       FROM documents WHERE company_id = $1 ORDER BY is_sample ASC, created_at DESC LIMIT $2 OFFSET $3`,
       [companyId, limit, offset],
     );
     return { items: rows, total: countRow?.count ?? 0, page, perPage: limit };
@@ -288,7 +372,7 @@ export class StoreService {
 
   async findPublishedDocuments(companyId: string): Promise<StoredDocument[]> {
     return this.db.query<StoredDocument>(
-      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, created_at AS "createdAt", updated_at AS "updatedAt"
+      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
        FROM documents WHERE company_id = $1 AND published = true AND status = 'ready' ORDER BY created_at DESC`,
       [companyId],
     );
@@ -363,17 +447,18 @@ export class StoreService {
     );
   }
 
-  async searchChunksByCompany(companyId: string, embedding: number[], limit = 6, threshold = 0.25) {
+  async searchChunksByCompany(companyId: string, embedding: number[], limit = 6, threshold = 0.25, publishedOnly = true) {
     return this.db.query<{ id: string; chunkText: string; documentId: string; documentTitle: string; similarity: number }>(
       `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", d.title AS "documentTitle",
               ROUND((1 - (c.embedding <=> $2::vector))::numeric, 4) AS similarity
        FROM document_chunks c
        JOIN documents d ON d.id = c.document_id
-       WHERE c.company_id = $1 AND c.embedding IS NOT NULL AND d.published = true
+       WHERE c.company_id = $1 AND c.embedding IS NOT NULL AND d.status = 'ready'
+         AND ($5::boolean = false OR d.published = true)
          AND (1 - (c.embedding <=> $2::vector)) >= $3
        ORDER BY c.embedding <=> $2::vector
        LIMIT $4`,
-      [companyId, JSON.stringify(embedding), threshold, limit],
+      [companyId, JSON.stringify(embedding), threshold, limit, publishedOnly],
     );
   }
 
@@ -395,19 +480,22 @@ export class StoreService {
     );
   }
 
-  async searchChunksByCompanyKeyword(companyId: string, terms: string[], limit = 6) {
+  async searchChunksByCompanyKeyword(companyId: string, terms: string[], limit = 6, publishedOnly = true) {
     if (!terms.length) return [];
     const params: any[] = [companyId];
     const conds = terms.map((_, i) => {
       params.push(`%${terms[i]}%`);
       return `c.chunk_text ILIKE $${i + 2}`;
     });
+    params.push(publishedOnly);
     const rank = terms.map((_, i) => `(c.chunk_text ILIKE $${i + 2})::int`);
     return this.db.query<{ id: string; chunkText: string; documentId: string; documentTitle: string; similarity: number }>(
       `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", d.title AS "documentTitle", 1 AS similarity
        FROM document_chunks c
        JOIN documents d ON d.id = c.document_id
-       WHERE c.company_id = $1 AND d.published = true AND (${conds.join(' OR ')})
+       WHERE c.company_id = $1 AND d.status = 'ready'
+         AND ($${params.length}::boolean = false OR d.published = true)
+         AND (${conds.join(' OR ')})
        ORDER BY (${rank.join(' + ')}) DESC, c.chunk_index ASC
        LIMIT $${params.length + 1}`,
       [...params, limit],

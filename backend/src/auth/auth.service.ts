@@ -49,7 +49,7 @@ export class AuthService {
       companyId: company.id,
     });
 
-    const tokens = this.generateTokens(user);
+    const tokens = this.generateTokens(user, company.plan);
 
     return {
       user: { id: user.id, email: user.email, name: user.name, role: user.role, companyId: user.companyId },
@@ -69,10 +69,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = this.generateTokens(user);
+    const company = await this.store.findCompanyById(user.companyId || '');
+    const tokens = this.generateTokens(user, company?.plan);
 
     return {
       user: { id: user.id, email: user.email, name: user.name, role: user.role, companyId: user.companyId },
+      company: company ? { id: company.id, name: company.name, slug: company.slug } : undefined,
       ...tokens,
     };
   }
@@ -98,12 +100,13 @@ export class AuthService {
     }
   }
 
-  generateTokens(user: { id: string; email: string; role: string; companyId?: string | null; tokenVersion?: number }) {
+  generateTokens(user: { id: string; email: string; role: string; companyId?: string | null; tokenVersion?: number }, plan?: string | null) {
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
       companyId: user.companyId,
+      plan: plan || 'free',
       ver: user.tokenVersion ?? 0,
     };
 
