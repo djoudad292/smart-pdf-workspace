@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 import { getApiUrl } from '@/lib/api'
 import { useToast } from '@/components/toast'
 
-const WIDGET_JS_URL = process.env.NEXT_PUBLIC_WIDGET_URL || 'https://pdf.djaouad.tech/widget.js'
+const WIDGET_JS_URL = process.env.NEXT_PUBLIC_WIDGET_URL || 'https://docs.djaouad.is-a.dev/widget.js'
 
 export function GuideView() {
   const { workspace } = useAuth()

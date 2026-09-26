@@ -7,7 +7,7 @@ import { Check, Copy, Download } from 'lucide-react'
 const APK_URL =
   'https://github.com/djoudad292/smart-pdf-workspace/releases/download/latest-apk-pdf/smart-pdf.apk'
 const PORTFOLIO_URL = 'https://djaouad.is-a.dev'
-const WIDGET_SNIPPET = `<script src="${process.env.NEXT_PUBLIC_WIDGET_URL || 'https://docs.djaouad.tech/widget.js'}" data-company-id="YOUR_COMPANY_ID"></script>`
+const WIDGET_SNIPPET = `<script src="${process.env.NEXT_PUBLIC_WIDGET_URL || 'https://docs.djaouad.is-a.dev/widget.js'}" data-company-id="YOUR_COMPANY_ID"></script>`
 
 const STEPS = [
   {
