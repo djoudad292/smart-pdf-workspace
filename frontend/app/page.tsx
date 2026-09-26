@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Check, Copy, Download } from 'lucide-react'
-import { GuestPlayground } from '@/components/guest-playground'
-import { WakeSplash } from '@/components/wake-splash'
 
 const APK_URL =
   'https://github.com/djoudad292/smart-pdf-workspace/releases/download/latest-apk-pdf/smart-pdf.apk'
@@ -38,7 +36,7 @@ const CAPABILITIES = [
 const FAQ = [
   {
     q: 'Do I need an account to try it?',
-    a: 'No. The sandbox above runs in your browser. Create a workspace only when you want your files to persist.',
+    a: 'No. The sandbox at /try runs in your browser. Create a workspace only when you want your files to persist.',
   },
   {
     q: 'What happens to what I upload in the sandbox?',
@@ -84,19 +82,17 @@ function CopyableSnippet() {
 
 export default function LandingPage() {
   return (
-    <>
-      <WakeSplash />
-      <div className="min-h-screen bg-stone-50 text-stone-900">
+    <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="sticky top-0 z-40 border-b border-stone-200 bg-stone-50/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <span className="text-sm font-semibold tracking-tight">Smart PDF Workspace</span>
           <nav className="flex items-center gap-4 text-sm">
-            <a href="#try" className="hidden text-stone-600 transition-colors hover:text-stone-900 sm:inline">
-              Try it
-            </a>
-            <a href="#widget" className="hidden text-stone-600 transition-colors hover:text-stone-900 sm:inline">
-              Widget
-            </a>
+            <Link
+              href="/try"
+              className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-800"
+            >
+              Try it now — no signup
+            </Link>
             <Link href="/login" className="text-stone-600 transition-colors hover:text-stone-900">
               Sign in
             </Link>
@@ -122,12 +118,12 @@ export default function LandingPage() {
               website.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <a
-                href="#try"
+              <Link
+                href="/try"
                 className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-800"
               >
                 Try it now — no signup
-              </a>
+              </Link>
               <Link
                 href="/register"
                 className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-900 transition-colors hover:border-stone-900"
@@ -136,22 +132,8 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="mt-3 text-xs text-stone-500">
-              The demo sandbox below is live. No account, no card.
+              The demo sandbox is live at <span className="font-mono">/try</span>. No account, no card.
             </p>
-          </div>
-        </section>
-
-        <section id="try" className="border-t border-stone-200 px-4 py-10 sm:py-14">
-          <div className="mx-auto max-w-5xl">
-            <div className="mb-6 max-w-2xl">
-              <h2 className="text-xl font-semibold tracking-tight">Try the product right here</h2>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">
-                This opens a throwaway workspace with two sample documents already indexed. Ask a
-                question, upload your own PDF, or generate a summary. Every visitor gets their own
-                sandbox — no login, nothing shared, deleted automatically.
-              </p>
-            </div>
-            <GuestPlayground />
           </div>
         </section>
 
@@ -212,7 +194,8 @@ export default function LandingPage() {
               </p>
             </div>
             <CopyableSnippet />
-          </div>        </section>
+          </div>
+        </section>
 
         <section className="border-t border-stone-200 px-4 py-10 sm:py-14">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
@@ -268,6 +251,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-    </>
   )
 }
