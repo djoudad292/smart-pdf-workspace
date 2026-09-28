@@ -6,6 +6,12 @@ Multi-tenant workspace to upload PDFs, ask AI questions about them (with sources
 
 ![Smart PDF Workspace — ask questions across your PDFs with cited sources](screenshots/pdf-workspace-hero.png)
 
+![Landing page](screenshots/pdf-landing.png)
+
+![Sandbox Q&A](screenshots/pdf-try.png)
+
+[Demo video: PDF workspace flow](screenshots/pdf-flow.webm)
+
 ## Architecture
 
 | Part | Stack | Host |
