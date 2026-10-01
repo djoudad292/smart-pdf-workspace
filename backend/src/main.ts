@@ -11,7 +11,7 @@ import { StoreService } from './common/store.service';
 import { AIService } from './ai/ai.service';
 import { seedDemoData } from './common/demo.seed';
 
-async function bootstrap() {
+async function buildApp() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
@@ -51,12 +51,31 @@ async function bootstrap() {
   const ai = app.get(AIService);
   await seedDemoData(store, ai);
 
-  const port = process.env.PORT || 4000;
-  await app.listen(port, '0.0.0.0');
-  logger.log(`Application is running on: http://0.0.0.0:${port}`);
+  await app.init();
+  return app;
 }
 
-bootstrap().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+// Cached handler for serverless (Vercel): cold start builds once per instance.
+let cachedHandler: ((req: unknown, res: unknown) => void) | null = null;
+
+export async function getHandler() {
+  if (!cachedHandler) {
+    const app = await buildApp();
+    cachedHandler = app.getHttpAdapter().getInstance();
+  }
+  return cachedHandler;
+}
+
+// Long-running hosts (Render/local): listen. Vercel uses api/index.ts instead.
+if (!process.env.VERCEL) {
+  const port = process.env.PORT || 4000;
+  buildApp()
+    .then(async (app) => {
+      await app.listen(port, '0.0.0.0');
+      new Logger('Bootstrap').log(`Application is running on: http://0.0.0.0:${port}`);
+    })
+    .catch((err) => {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    });
+}
