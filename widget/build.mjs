@@ -13,7 +13,7 @@ await build({
   format: 'iife',
   define: {
     'process.env.WIDGET_API_URL': JSON.stringify(
-      process.env.WIDGET_API_URL || 'https://smart-pdf-backend-vyh7.onrender.com'
+      process.env.WIDGET_API_URL || 'https://smart-pdf-workspace-tan.vercel.app'
     ),
   },
   outfile: path.join(__dirname, '../frontend/public/widget.js'),

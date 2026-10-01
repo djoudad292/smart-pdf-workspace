@@ -1,7 +1,7 @@
 // Smart PDF Workspace — embeddable ask-your-docs widget.
 // Dependency-free. Rendered in a shadow DOM so it never collides with host styles.
 
-const API_URL = process.env.WIDGET_API_URL || 'https://smart-pdf-backend-vyh7.onrender.com';
+const API_URL = process.env.WIDGET_API_URL || 'https://smart-pdf-workspace-tan.vercel.app';
 
 interface WidgetConfig {
   title: string;
