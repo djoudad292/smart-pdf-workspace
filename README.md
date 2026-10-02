@@ -24,8 +24,8 @@ Multi-tenant workspace to upload PDFs, ask AI questions about them (with sources
 ## Features
 
 - **Multi-tenant auth** — JWT access + refresh with token revocation, company slugs, agent invites, forgot/reset password.
-- **Upload PDFs** — stored as `BYTEA` in Postgres; text extracted with `pdf-parse`, chunked, and embedded into `vector(1536)` rows with pgvector similarity search.
-- **Ask your documents** — RAG answers grounded in your PDFs with similarity sources shown.
+- **Upload PDFs** — stored as `BYTEA` in Postgres; text extracted with `pdf-parse` (text layer only, no OCR), sentence-aware chunking, and embedded into `vector(1536)` rows with pgvector similarity search. Scanned/image-only PDFs are rejected with a clear OCR message; table- and image-heavy PDFs are indexed with a low-text-density warning.
+- **Ask your documents** — RAG answers grounded in your PDFs with similarity sources shown, and every answer reports the `retrievalMode` that produced it.
 - **Summaries** — one-click AI summaries, cached per document.
 - **Ask-your-docs widget** — one-line embeddable script; config (title, color, position) editable per workspace.
 - **Mobile app** — auth, upload, ask, summaries, widget settings on Android/iOS.
@@ -53,11 +53,25 @@ npm install && npm start
 
 ## Environment variables
 
-- `backend/.env.example` — `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, optional `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `SMTP_*`, `FRONTEND_URL`, `APP_URL`.
+- `backend/.env.example` — `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `ALLOW_HASH_EMBEDDINGS`, `RAG_SIMILARITY_THRESHOLD`, `PDF_MIN_CHARS_PER_PAGE`, `PDF_LOW_DENSITY_CHARS_PER_PAGE`, `SMTP_*`, `FRONTEND_URL`, `APP_URL`.
 - `frontend/.env.example` — `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WIDGET_URL`.
 - `mobile/.env.example` — `EXPO_PUBLIC_API_URL`.
 
-> Note: without `OPENAI_API_KEY` the app uses a deterministic local-hash embedding fallback (1536-dim). Without `OPENROUTER_API_KEY`, ask/summarize return a helpful "no answer" fallback.
+## What this product does and does not do
+
+**PDF support: text-layer PDFs only.** Text is extracted with `pdf-parse`, which reads the text layer and nothing else.
+
+- **No OCR.** A scanned or image-only PDF is detected and **rejected at upload**, before any embedding call, with an error saying OCR is required. Run it through an OCR tool first, then upload the result.
+- **No table extraction and no layout analysis.** A table- or image-heavy PDF is still indexed, but it is flagged with a low-text-density warning that is returned on the upload result, so you know answers on it will be thin.
+- Chunking is sentence-aware: chunks break on sentence boundaries, never mid-sentence.
+
+Retrieval honesty:
+
+- `OPENAI_API_KEY` is required for semantic retrieval. **There is no silent hash-embedding fallback.** A hash "embedding" is a bucket, not a semantic vector, so cosine similarity over one produces confidently wrong answers. When embeddings are unavailable, retrieval degrades to honest keyword scoring and every answer says so: `retrievalMode: "keyword-degraded"`.
+- `GET /health/embeddings` (public) reports the live mode: `vector`, `hash-fallback`, plus `openaiConfigured`, `allowHashEmbeddings`, `lastEmbeddingSuccessAt`, `lastDegradedAt`.
+- `ALLOW_HASH_EMBEDDINGS` defaults to `false`. Even when set to `true`, hash vectors are refused by pgvector similarity search and never searched.
+
+> Note: without `OPENROUTER_API_KEY`, ask/summarize quote the retrieved passages instead of calling an LLM.
 
 ## Deploy
 

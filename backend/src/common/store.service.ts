@@ -1,5 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from './database.service';
+import { EmbeddingsUnavailableError, isHashVector } from '../ai/embeddings.service';
+
+/** A retrieved document chunk, whatever path served it. */
+export type StoreChunkHit = {
+  id: string;
+  chunkText: string;
+  documentId: string;
+  documentTitle?: string | null;
+  /** Cosine similarity on the vector path; matched-term ratio on the keyword path. */
+  similarity: number;
+};
 
 export type StoredUser = {
   id: string;
@@ -46,6 +57,8 @@ export type StoredDocument = {
   summary?: string | null;
   published: boolean;
   error?: string | null;
+  /** Non-fatal ingest advice, e.g. a low text-density warning. Not an error. */
+  ingestWarning?: string | null;
   isSample?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -57,7 +70,8 @@ export type StoredChunk = {
   companyId: string;
   chunkIndex: number;
   chunkText: string;
-  embedding: number[];
+  /** Null when the embedding provider was unavailable: the chunk stays keyword-searchable. */
+  embedding: number[] | null;
   createdAt: Date;
 };
 
@@ -325,9 +339,9 @@ export class StoreService {
   // Documents
   async createDocument(data: Omit<StoredDocument, 'createdAt' | 'updatedAt'>): Promise<StoredDocument> {
     const rows = await this.db.query<StoredDocument>(
-      `INSERT INTO documents (id, company_id, title, filename, mime, size_bytes, file, content, page_count, status, summary, published, error, is_sample, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, COALESCE($14, false), now(), now())
-        RETURNING id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"`,
+      `INSERT INTO documents (id, company_id, title, filename, mime, size_bytes, file, content, page_count, status, summary, published, error, ingest_warning, is_sample, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, COALESCE($15, false), now(), now())
+        RETURNING id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, ingest_warning AS "ingestWarning", is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"`,
       [
         data.id,
         data.companyId,
@@ -342,6 +356,7 @@ export class StoreService {
         data.summary || null,
         data.published,
         data.error || null,
+        data.ingestWarning || null,
         data.isSample === true,
       ],
     );
@@ -350,7 +365,7 @@ export class StoreService {
 
   async findDocumentById(id: string): Promise<StoredDocument | null> {
     return this.db.queryOne<StoredDocument>(
-      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
+      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, ingest_warning AS "ingestWarning", is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
        FROM documents WHERE id = $1`,
       [id],
     );
@@ -363,7 +378,7 @@ export class StoreService {
       [companyId],
     );
     const rows = await this.db.query<StoredDocument>(
-      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
+      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, ingest_warning AS "ingestWarning", is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
        FROM documents WHERE company_id = $1 ORDER BY is_sample ASC, created_at DESC LIMIT $2 OFFSET $3`,
       [companyId, limit, offset],
     );
@@ -372,7 +387,7 @@ export class StoreService {
 
   async findPublishedDocuments(companyId: string): Promise<StoredDocument[]> {
     return this.db.query<StoredDocument>(
-      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
+      `SELECT id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", content, page_count AS "pageCount", status, summary, published, error, ingest_warning AS "ingestWarning", is_sample AS "isSample", created_at AS "createdAt", updated_at AS "updatedAt"
        FROM documents WHERE company_id = $1 AND published = true AND status = 'ready' ORDER BY created_at DESC`,
       [companyId],
     );
@@ -390,6 +405,7 @@ export class StoreService {
       summary: 'summary',
       published: 'published',
       error: 'error',
+      ingestWarning: 'ingest_warning',
     };
     const dataAny = data as Record<string, any>;
     for (const [key, col] of Object.entries(fields)) {
@@ -397,7 +413,7 @@ export class StoreService {
     }
     return this.db.queryOne<StoredDocument>(
       `UPDATE documents SET ${sets.join(', ')} WHERE id = $1
-       RETURNING id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, created_at AS "createdAt", updated_at AS "updatedAt"`,
+       RETURNING id, company_id AS "companyId", title, filename, mime, size_bytes AS "sizeBytes", file, content, page_count AS "pageCount", status, summary, published, error, ingest_warning AS "ingestWarning", created_at AS "createdAt", updated_at AS "updatedAt"`,
       params,
     );
   }
@@ -407,10 +423,14 @@ export class StoreService {
   }
 
   async insertChunk(data: Omit<StoredChunk, 'createdAt'>): Promise<void> {
+    // A null embedding keeps the chunk keyword-searchable while the embedding
+    // provider is unavailable. Hash vectors are never persisted: they are not
+    // semantic and would poison later similarity searches.
+    const embeddingValue = data.embedding ? JSON.stringify(data.embedding) : null;
     await this.db.execute(
       `INSERT INTO document_chunks (id, document_id, company_id, chunk_index, chunk_text, embedding, created_at)
        VALUES ($1, $2, $3, $4, $5, $6::vector, now())`,
-      [data.id, data.documentId, data.companyId, data.chunkIndex, data.chunkText, JSON.stringify(data.embedding)],
+      [data.id, data.documentId, data.companyId, data.chunkIndex, data.chunkText, embeddingValue],
     );
   }
 
@@ -434,10 +454,25 @@ export class StoreService {
     return row?.count ?? 0;
   }
 
-  async searchChunksByDocument(documentId: string, embedding: number[], limit = 5, threshold = 0.25) {
-    return this.db.query<{ id: string; chunkText: string; documentId: string; similarity: number }>(
+  /**
+   * Hard guard: hash-fallback vectors are not semantic, so they must never
+   * reach a pgvector similarity search. Throws so the caller degrades to
+   * keyword retrieval instead of returning confidently wrong chunks.
+   */
+  private assertSearchableVector(embedding: number[]): void {
+    if (isHashVector(embedding)) {
+      throw new EmbeddingsUnavailableError(
+        'Refusing vector search with a hash-fallback embedding (no semantic signal)',
+        'hash-vector',
+      );
+    }
+  }
+
+  async searchChunksByDocument(documentId: string, embedding: number[], limit = 5, threshold = 0.25): Promise<StoreChunkHit[]> {
+    this.assertSearchableVector(embedding);
+    return this.db.query<StoreChunkHit>(
       `SELECT id, chunk_text AS "chunkText", document_id AS "documentId",
-              ROUND((1 - (embedding <=> $2::vector))::numeric, 4) AS similarity
+              ROUND((1 - (embedding <=> $2::vector))::numeric, 4)::float8 AS similarity
        FROM document_chunks
        WHERE document_id = $1 AND embedding IS NOT NULL
          AND (1 - (embedding <=> $2::vector)) >= $3
@@ -447,10 +482,11 @@ export class StoreService {
     );
   }
 
-  async searchChunksByCompany(companyId: string, embedding: number[], limit = 6, threshold = 0.25, publishedOnly = true) {
-    return this.db.query<{ id: string; chunkText: string; documentId: string; documentTitle: string; similarity: number }>(
+  async searchChunksByCompany(companyId: string, embedding: number[], limit = 6, threshold = 0.25, publishedOnly = true): Promise<StoreChunkHit[]> {
+    this.assertSearchableVector(embedding);
+    return this.db.query<StoreChunkHit>(
       `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", d.title AS "documentTitle",
-              ROUND((1 - (c.embedding <=> $2::vector))::numeric, 4) AS similarity
+              ROUND((1 - (c.embedding <=> $2::vector))::numeric, 4)::float8 AS similarity
        FROM document_chunks c
        JOIN documents d ON d.id = c.document_id
        WHERE c.company_id = $1 AND c.embedding IS NOT NULL AND d.status = 'ready'
@@ -462,7 +498,12 @@ export class StoreService {
     );
   }
 
-  async searchChunksByDocumentKeyword(documentId: string, terms: string[], limit = 5) {
+  /**
+   * Keyword fallback scoring: a chunk matches if it contains any query term and
+   * is ranked by how many terms it matched. `similarity` is the matched-term
+   * ratio so callers see an honest score instead of a constant 1.
+   */
+  async searchChunksByDocumentKeyword(documentId: string, terms: string[], limit = 5): Promise<StoreChunkHit[]> {
     if (!terms.length) return [];
     const params: any[] = [documentId];
     const conds = terms.map((_, i) => {
@@ -470,8 +511,9 @@ export class StoreService {
       return `c.chunk_text ILIKE $${i + 2}`;
     });
     const rank = terms.map((_, i) => `(c.chunk_text ILIKE $${i + 2})::int`);
-    return this.db.query<{ id: string; chunkText: string; documentId: string; similarity: number }>(
-      `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", 1 AS similarity
+    return this.db.query<StoreChunkHit>(
+      `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId",
+              ROUND(((${rank.join(' + ')})::numeric / ${terms.length}), 4)::float8 AS similarity
        FROM document_chunks c
        WHERE c.document_id = $1 AND (${conds.join(' OR ')})
        ORDER BY (${rank.join(' + ')}) DESC, c.chunk_index ASC
@@ -480,7 +522,7 @@ export class StoreService {
     );
   }
 
-  async searchChunksByCompanyKeyword(companyId: string, terms: string[], limit = 6, publishedOnly = true) {
+  async searchChunksByCompanyKeyword(companyId: string, terms: string[], limit = 6, publishedOnly = true): Promise<StoreChunkHit[]> {
     if (!terms.length) return [];
     const params: any[] = [companyId];
     const conds = terms.map((_, i) => {
@@ -489,8 +531,9 @@ export class StoreService {
     });
     params.push(publishedOnly);
     const rank = terms.map((_, i) => `(c.chunk_text ILIKE $${i + 2})::int`);
-    return this.db.query<{ id: string; chunkText: string; documentId: string; documentTitle: string; similarity: number }>(
-      `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", d.title AS "documentTitle", 1 AS similarity
+    return this.db.query<StoreChunkHit>(
+      `SELECT c.id, c.chunk_text AS "chunkText", c.document_id AS "documentId", d.title AS "documentTitle",
+              ROUND(((${rank.join(' + ')})::numeric / ${terms.length}), 4)::float8 AS similarity
        FROM document_chunks c
        JOIN documents d ON d.id = c.document_id
        WHERE c.company_id = $1 AND d.status = 'ready'

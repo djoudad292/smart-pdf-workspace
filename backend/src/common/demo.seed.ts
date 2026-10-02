@@ -68,8 +68,19 @@ export async function seedDemoData(store: StoreService, ai: AIService): Promise<
     const chunkCount = await store.countChunksByDocument(doc.id);
     if (chunkCount === 0) {
       const paragraphs = DEMO_CONTENT.split(/\n\s*\n/).filter((p) => p.trim());
+      let degraded = false;
       for (let i = 0; i < paragraphs.length; i++) {
-        const embedding = await ai.generateEmbedding(paragraphs[i]);
+        // Embed the demo chunks when OpenAI is available; otherwise leave the
+        // embedding null so keyword retrieval still serves the demo company.
+        let embedding: number[] | null = null;
+        if (!degraded) {
+          try {
+            embedding = await ai.generateEmbedding(paragraphs[i]);
+          } catch (e) {
+            degraded = true;
+            logger.warn(`Demo seed embedding skipped, chunks stay keyword-searchable: ${(e as Error).message}`);
+          }
+        }
         await store.insertChunk({
           id: randomUUID(),
           documentId: doc.id,
@@ -79,7 +90,7 @@ export async function seedDemoData(store: StoreService, ai: AIService): Promise<
           embedding,
         });
       }
-      logger.log(`Indexed ${paragraphs.length} demo chunks`);
+      logger.log(`Indexed ${paragraphs.length} demo chunks${degraded ? ' (keyword-only)' : ''}`);
     }
 
     if (!doc.published) {

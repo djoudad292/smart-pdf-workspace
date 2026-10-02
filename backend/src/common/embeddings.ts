@@ -9,9 +9,14 @@ function hashString(str: string): number {
 }
 
 /**
- * Deterministic local embedding fallback (1536-dim, unit-normalised).
- * Used when OpenAI is unavailable. Same algorithm for both tenant and guest
- * workspaces so similarity thresholds stay consistent.
+ * Deterministic local hash vector (1536-dim, unit-normalised).
+ *
+ * This is NOT a semantic embedding: it is a bag of hashed character grams, so
+ * cosine similarity between two such vectors carries no reliable meaning. It is
+ * only ever produced when the operator explicitly sets
+ * `ALLOW_HASH_EMBEDDINGS=true`, and every result is tagged in a WeakSet by
+ * `EmbeddingsService` so pgvector similarity search refuses it. Prefer the
+ * honest keyword retrieval path over this.
  */
 export function embedLocally(text: string): number[] {
   const vector = new Array(EMBEDDING_DIM).fill(0);

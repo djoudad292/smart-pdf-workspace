@@ -16,6 +16,13 @@ async function buildApp() {
     bufferLogs: true,
   });
   app.useLogger(app.get(PinoLogger));
+  // `bufferLogs: true` parks every `new Logger(...)` call in an in-memory
+  // buffer. Nest only auto-flushes that buffer from app.listen()'s callback,
+  // and app.listen() never runs on Vercel serverless — so without this line the
+  // serverless build silently drops every application log (including the
+  // embeddings startup line and the EMBEDDINGS_DEGRADED / RETRIEVAL_DEGRADED
+  // markers). Flushing here covers both the Vercel and the listen() paths.
+  app.flushLogs();
   const logger = new Logger('Bootstrap');
 
   app.enableCors({

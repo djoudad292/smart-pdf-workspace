@@ -62,6 +62,8 @@ const SCHEMA_STATEMENTS: string[] = [
     created_at TIMESTAMPTZ DEFAULT now()
   )`,
   `ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_sample BOOLEAN DEFAULT false`,
+  // Non-fatal ingest advice (e.g. low text density) kept apart from `error`.
+  `ALTER TABLE documents ADD COLUMN IF NOT EXISTS ingest_warning TEXT`,
   `CREATE INDEX IF NOT EXISTS idx_document_chunks_document ON document_chunks(document_id)`,
   `CREATE INDEX IF NOT EXISTS idx_documents_company ON documents(company_id)`,
   `CREATE TABLE IF NOT EXISTS password_resets (

@@ -12,6 +12,7 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { StoreService } from '../common/store.service';
 import { AIService } from '../ai/ai.service';
+import { isEmbeddingsUnavailableError } from '../ai/embeddings.service';
 import { DocumentsService } from '../documents/documents.service';
 import { GUEST_SAMPLES } from './guest.samples';
 
@@ -129,6 +130,7 @@ export class GuestService implements OnModuleInit, OnModuleDestroy {
         sizeBytes: d.sizeBytes,
         status: d.status,
         summary: d.summary,
+        ingestWarning: d.ingestWarning,
         isSample: d.isSample === true,
         createdAt: d.createdAt,
       })),
@@ -167,7 +169,7 @@ export class GuestService implements OnModuleInit, OnModuleDestroy {
     }
     const summary = await this.aiService.summarizeDocument(companyId, documentId);
     await this.store.updateDocument(documentId, { summary });
-    return { summary };
+    return { summary, retrievalMode: this.aiService.currentRetrievalMode() };
   }
 
   /** Answer a question across every ready document in the sandbox. */
@@ -201,8 +203,19 @@ export class GuestService implements OnModuleInit, OnModuleDestroy {
 
       try {
         const chunks = this.documentsService.chunkContent(sample.content);
+        // Null embeddings keep the samples keyword-searchable when the embedding
+        // provider is unavailable, so the sandbox still answers questions.
+        let degraded = false;
         for (let i = 0; i < chunks.length; i++) {
-          const embedding = await this.aiService.generateEmbedding(chunks[i]);
+          let embedding: number[] | null = null;
+          if (!degraded) {
+            try {
+              embedding = await this.aiService.generateEmbedding(chunks[i]);
+            } catch (err) {
+              if (!isEmbeddingsUnavailableError(err)) throw err;
+              degraded = true;
+            }
+          }
           await this.store.insertChunk({
             id: crypto.randomUUID(),
             documentId: document.id,
@@ -211,6 +224,11 @@ export class GuestService implements OnModuleInit, OnModuleDestroy {
             chunkText: chunks[i],
             embedding,
           });
+        }
+        if (degraded) {
+          this.logger.warn(
+            `Guest samples stored keyword-only (embeddings unavailable) for ${companyId}`,
+          );
         }
       } catch (err) {
         this.logger.warn(`Could not index guest sample "${sample.title}": ${(err as Error).message}`);

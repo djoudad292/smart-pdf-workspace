@@ -3,6 +3,9 @@ import * as crypto from 'crypto';
 import pdfParse from 'pdf-parse';
 import { StoreService } from '../common/store.service';
 import { AIService } from '../ai/ai.service';
+import { isEmbeddingsUnavailableError } from '../ai/embeddings.service';
+import { analyzeExtraction } from './pdf-quality';
+import { chunkText } from './chunking';
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
@@ -30,15 +33,32 @@ export class DocumentsService {
 
     let content = '';
     let pageCount = 0;
+    let extractionFailed = false;
     try {
       const parsed = await pdfParse(file.buffer);
       content = (parsed.text || '').trim();
       pageCount = parsed.numpages || 0;
     } catch (err) {
+      extractionFailed = true;
       this.logger.warn(`PDF extraction failed for ${file.originalname}: ${(err as Error).message}`);
     }
 
+    // Quality gate before any chunking or embedding: pdf-parse has no OCR, so a
+    // scanned PDF extracts to nothing and would otherwise be indexed as an empty
+    // document that answers questions with no sources.
+    const quality = analyzeExtraction(content, pageCount);
     const title = file.originalname.replace(/\.pdf$/i, '') || 'Untitled';
+    const rejected = extractionFailed || quality.rejected;
+    const reason = extractionFailed
+      ? 'The PDF could not be read. The file may be corrupt or password-protected.'
+      : quality.reason;
+
+    if (rejected) {
+      this.logger.warn(`Rejected ${file.originalname}: ${reason}`);
+    } else if (quality.warning) {
+      this.logger.warn(`Low text density in ${file.originalname}: ${quality.warning}`);
+    }
+
     const document = await this.store.createDocument({
       id: crypto.randomUUID(),
       companyId,
@@ -49,33 +69,63 @@ export class DocumentsService {
       file: file.buffer,
       content,
       pageCount,
-      status: content ? 'processing' : 'failed',
-      published: options.published === true,
-      error: content ? null : 'No readable text was extracted. The PDF may be scanned or image-only.',
+      status: rejected ? 'failed' : 'processing',
+      // A rejected document is never published, whatever the caller asked for.
+      published: false,
+      error: reason || null,
+      ingestWarning: rejected ? null : quality.warning || null,
     });
 
-    if (content) {
-      const chunks = this.chunkContent(content);
-      try {
-        for (let i = 0; i < chunks.length; i++) {
-          const embedding = await this.aiService.generateEmbedding(chunks[i]);
-          await this.store.insertChunk({
-            id: crypto.randomUUID(),
-            documentId: document.id,
-            companyId,
-            chunkIndex: i,
-            chunkText: chunks[i],
-            embedding,
-          });
-        }
-        return this.store.updateDocument(document.id, { status: 'ready', error: null });
-      } catch (err) {
-        this.logger.error(`Embedding failed for ${document.id}: ${(err as Error).message}`);
-        return this.store.updateDocument(document.id, { status: 'failed', error: (err as Error).message });
-      }
+    if (rejected) {
+      return this.store.updateDocument(document.id, { status: 'failed', error: reason });
     }
 
-    return this.store.findDocumentById(document.id);
+    const chunks = this.chunkContent(content);
+    try {
+      await this.indexChunks(companyId, document.id, chunks);
+      return this.store.updateDocument(document.id, {
+        status: 'ready',
+        error: null,
+        // Re-asserted on the response so the upload result carries the warning.
+        ingestWarning: quality.warning || null,
+        published: options.published === true,
+      });
+    } catch (err) {
+      this.logger.error(`Indexing failed for ${document.id}: ${(err as Error).message}`);
+      return this.store.updateDocument(document.id, { status: 'failed', error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Chunk + embed. When the embedding provider is unavailable the chunks are
+   * stored with a null embedding instead of a hash vector: the upload still
+   * succeeds and stays keyword-searchable, and no nonsense vector ever reaches
+   * pgvector.
+   */
+  private async indexChunks(companyId: string, documentId: string, chunks: string[]): Promise<void> {
+    let embeddingDegraded = false;
+    for (let i = 0; i < chunks.length; i++) {
+      let embedding: number[] | null = null;
+      if (!embeddingDegraded) {
+        try {
+          embedding = await this.aiService.generateEmbedding(chunks[i]);
+        } catch (err) {
+          if (!isEmbeddingsUnavailableError(err)) throw err;
+          embeddingDegraded = true;
+          this.logger.warn(
+            `Embeddings unavailable, storing ${chunks.length} chunk(s) keyword-only: ${(err as Error).message}`,
+          );
+        }
+      }
+      await this.store.insertChunk({
+        id: crypto.randomUUID(),
+        documentId,
+        companyId,
+        chunkIndex: i,
+        chunkText: chunks[i],
+        embedding,
+      });
+    }
   }
 
   getDocuments(companyId: string, page = 1, limit = 50) {
@@ -121,11 +171,11 @@ export class DocumentsService {
       throw new BadRequestException('This document is not ready yet. It may still be processing or have failed to extract text.');
     }
     if (doc.summary && !force) {
-      return { summary: doc.summary, cached: true };
+      return { summary: doc.summary, cached: true, retrievalMode: this.aiService.currentRetrievalMode() };
     }
     const summary = await this.aiService.summarizeDocument(companyId, documentId);
     await this.store.updateDocument(documentId, { summary });
-    return { summary, cached: false };
+    return { summary, cached: false, retrievalMode: this.aiService.currentRetrievalMode() };
   }
 
   async setPublished(id: string, companyId: string, published: boolean) {
@@ -138,62 +188,29 @@ export class DocumentsService {
 
   async reindex(companyId: string, documentId: string) {
     const doc = await this.assertDocumentInCompany(documentId, companyId);
+    // Same quality gate as upload: reindexing a scanned PDF would only produce
+    // an empty, unanswerable index.
+    const quality = analyzeExtraction(doc.content, doc.pageCount);
+    if (quality.rejected) {
+      return this.store.updateDocument(documentId, { status: 'failed', error: quality.reason });
+    }
     await this.store.deleteChunksByDocument(documentId);
     const chunks = this.chunkContent(doc.content);
-    if (chunks.length === 0) {
-      return this.store.updateDocument(documentId, { status: 'failed', error: 'No readable text to index.' });
-    }
     try {
-      for (let i = 0; i < chunks.length; i++) {
-        const embedding = await this.aiService.generateEmbedding(chunks[i]);
-        await this.store.insertChunk({
-          id: crypto.randomUUID(),
-          documentId,
-          companyId,
-          chunkIndex: i,
-          chunkText: chunks[i],
-          embedding,
-        });
-      }
-      return this.store.updateDocument(documentId, { status: 'ready', error: null });
+      await this.indexChunks(companyId, documentId, chunks);
+      return this.store.updateDocument(documentId, {
+        status: 'ready',
+        error: null,
+        ingestWarning: quality.warning || null,
+      });
     } catch (err) {
       this.logger.error(`Reindex failed for ${documentId}: ${(err as Error).message}`);
       return this.store.updateDocument(documentId, { status: 'failed', error: (err as Error).message });
     }
   }
 
-  /** Split extracted text into retrieval-sized chunks. */
+  /** Split extracted text into sentence-aware retrieval chunks. */
   chunkContent(content: string): string[] {
-    const paragraphs = content.split(/\n\s*\n/);
-    const chunks: string[] = [];
-    let currentChunk = '';
-
-    for (const paragraph of paragraphs) {
-      const trimmed = paragraph.trim();
-      if (!trimmed) continue;
-
-      if (currentChunk.length + trimmed.length > 500 && currentChunk.length > 0) {
-        chunks.push(currentChunk.trim());
-        currentChunk = '';
-      }
-
-      if (trimmed.length > 500) {
-        if (currentChunk) {
-          chunks.push(currentChunk.trim());
-          currentChunk = '';
-        }
-        for (let i = 0; i < trimmed.length; i += 400) {
-          chunks.push(trimmed.slice(i, i + 500));
-        }
-      } else {
-        currentChunk += (currentChunk ? '\n\n' : '') + trimmed;
-      }
-    }
-
-    if (currentChunk.trim()) {
-      chunks.push(currentChunk.trim());
-    }
-
-    return chunks.length > 0 ? chunks : [content];
+    return chunkText(content);
   }
 }
