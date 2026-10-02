@@ -46,7 +46,7 @@ cd mobile && npm install && npx tsc --noEmit && npm start
   - Chunks are stored with a **null** embedding when embeddings are unavailable (uploads, reindex, guest samples, demo seed), so the product still answers via keyword mode instead of failing.
 - Startup log: `embeddings: configured=<bool> mode=<vector|hash-fallback> allowHash=<bool>` (from `EmbeddingsService.onModuleInit`, so it runs on Render/local **and** Vercel serverless — both go through `buildApp()` in `main.ts`).
 - Public unauthenticated `GET /health/embeddings` returns `{ mode, model, openaiConfigured, allowHashEmbeddings, lastEmbeddingSuccessAt, lastDegradedAt }`.
-- Every retrieval call site returns `{ results, mode }`; `retrievalMode` is in the answer payload of `/documents/:id/ask`, `/documents/:id/summarize`, `/widget/ask` and the guest equivalents.
+- Every retrieval call site returns `{ results, mode }`. `retrievalMode` is in the answer payload of `/documents/:id/ask`, `/widget/ask` and the guest equivalents — **the endpoints that actually retrieve**. `POST /documents/:id/summarize` (and its guest equivalent) returns `{ summary, cached }` and **no** `retrievalMode`: summarization reads the whole document, so no retrieval ran and there is no mode to report. Do not annotate a non-retrieval response with a retrieval mode.
 
 ### Other backend notes
 

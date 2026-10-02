@@ -170,12 +170,15 @@ export class DocumentsService {
     if (doc.status !== 'ready') {
       throw new BadRequestException('This document is not ready yet. It may still be processing or have failed to extract text.');
     }
+    // No retrievalMode here: summarization reads the whole document, so no
+    // retrieval ran and there is no mode to report. Answer endpoints that do
+    // retrieve (/documents/:id/ask, /widget/ask) still carry it.
     if (doc.summary && !force) {
-      return { summary: doc.summary, cached: true, retrievalMode: this.aiService.currentRetrievalMode() };
+      return { summary: doc.summary, cached: true };
     }
     const summary = await this.aiService.summarizeDocument(companyId, documentId);
     await this.store.updateDocument(documentId, { summary });
-    return { summary, cached: false, retrievalMode: this.aiService.currentRetrievalMode() };
+    return { summary, cached: false };
   }
 
   async setPublished(id: string, companyId: string, published: boolean) {

@@ -169,7 +169,7 @@ export class GuestService implements OnModuleInit, OnModuleDestroy {
     }
     const summary = await this.aiService.summarizeDocument(companyId, documentId);
     await this.store.updateDocument(documentId, { summary });
-    return { summary, retrievalMode: this.aiService.currentRetrievalMode() };
+    return { summary };
   }
 
   /** Answer a question across every ready document in the sandbox. */

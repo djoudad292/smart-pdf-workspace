@@ -56,7 +56,6 @@ describe('DocumentsService upload', () => {
     };
     ai = {
       generateEmbedding: jest.fn(async () => new Array(1536).fill(0.1)),
-      currentRetrievalMode: jest.fn(() => 'vector' as const),
       askDocument: jest.fn(),
     };
     const module = await Test.createTestingModule({
@@ -189,15 +188,31 @@ describe('DocumentsService upload', () => {
     });
   });
 
-  describe('summarize reports the retrieval mode', () => {
-    it('includes retrievalMode on a fresh summary', async () => {
+  describe('summarize never claims a retrieval mode', () => {
+    it('returns no retrievalMode on a freshly generated summary', async () => {
       const aiModule = await Test.createTestingModule({
         providers: [DocumentsService, { provide: StoreService, useValue: store }, { provide: AIService, useValue: ai }],
       }).compile();
       const svc = aiModule.get(DocumentsService);
       ai.summarizeDocument = jest.fn(async () => 'A summary.');
       const result = await svc.summarize('co-1', 'doc-1');
-      expect(result).toEqual({ summary: 'A summary.', cached: false, retrievalMode: 'vector' });
+      expect(result).toEqual({ summary: 'A summary.', cached: false });
+      expect(result).not.toHaveProperty('retrievalMode');
+    });
+
+    it('returns no retrievalMode on a cached summary either', async () => {
+      const aiModule = await Test.createTestingModule({
+        providers: [DocumentsService, { provide: StoreService, useValue: store }, { provide: AIService, useValue: ai }],
+      }).compile();
+      const svc = aiModule.get(DocumentsService);
+      ai.summarizeDocument = jest.fn(async () => 'A fresh summary.');
+      store.findDocumentById.mockResolvedValue(
+        makeDoc({ id: 'doc-1', content: 'text', status: 'ready', summary: 'Cached summary.' }),
+      );
+      const result = await svc.summarize('co-1', 'doc-1');
+      expect(result).toEqual({ summary: 'Cached summary.', cached: true });
+      expect(result).not.toHaveProperty('retrievalMode');
+      expect(ai.summarizeDocument).not.toHaveBeenCalled();
     });
   });
 });

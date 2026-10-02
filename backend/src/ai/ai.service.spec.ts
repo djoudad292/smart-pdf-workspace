@@ -140,4 +140,18 @@ describe('AIService retrieval mode', () => {
       expect(terms).toEqual(['retention', 'period']);
     });
   });
+
+  describe('summarization performs no retrieval', () => {
+    it('reads the whole document and runs no search at all', async () => {
+      const summary = await ai.summarizeDocument('co-1', 'doc-1');
+      expect(typeof summary).toBe('string');
+      expect(store.searchChunksByDocument).not.toHaveBeenCalled();
+      expect(store.searchChunksByDocumentKeyword).not.toHaveBeenCalled();
+    });
+
+    it('exposes no retrieval-mode accessor a non-retrieval result could borrow', () => {
+      // The annotate-summarize-with-retrievalMode bug came from this accessor.
+      expect(Object.getOwnPropertyNames(AIService.prototype)).not.toContain('currentRetrievalMode');
+    });
+  });
 });

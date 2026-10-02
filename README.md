@@ -25,8 +25,8 @@ Multi-tenant workspace to upload PDFs, ask AI questions about them (with sources
 
 - **Multi-tenant auth** — JWT access + refresh with token revocation, company slugs, agent invites, forgot/reset password.
 - **Upload PDFs** — stored as `BYTEA` in Postgres; text extracted with `pdf-parse` (text layer only, no OCR), sentence-aware chunking, and embedded into `vector(1536)` rows with pgvector similarity search. Scanned/image-only PDFs are rejected with a clear OCR message; table- and image-heavy PDFs are indexed with a low-text-density warning.
-- **Ask your documents** — RAG answers grounded in your PDFs with similarity sources shown, and every answer reports the `retrievalMode` that produced it.
-- **Summaries** — one-click AI summaries, cached per document.
+- **Ask your documents** — RAG answers grounded in your PDFs with similarity sources shown. Every *answer* reports the `retrievalMode` that produced it.
+- **Summaries** — one-click AI summaries, cached per document. A summary reads the whole document and performs **no** retrieval, so the summarize endpoint returns `{ summary, cached }` with no `retrievalMode`.
 - **Ask-your-docs widget** — one-line embeddable script; config (title, color, position) editable per workspace.
 - **Mobile app** — auth, upload, ask, summaries, widget settings on Android/iOS.
 
@@ -68,6 +68,7 @@ npm install && npm start
 Retrieval honesty:
 
 - `OPENAI_API_KEY` is required for semantic retrieval. **There is no silent hash-embedding fallback.** A hash "embedding" is a bucket, not a semantic vector, so cosine similarity over one produces confidently wrong answers. When embeddings are unavailable, retrieval degrades to honest keyword scoring and every answer says so: `retrievalMode: "keyword-degraded"`.
+- `retrievalMode` is returned only by the endpoints that retrieve — `/documents/:id/ask` and `/widget/ask` (plus their guest equivalents). `POST /documents/:id/summarize` does **not** return it: summarization reads the whole document rather than retrieving chunks, so no retrieval mode applies.
 - `GET /health/embeddings` (public) reports the live mode: `vector`, `hash-fallback`, plus `openaiConfigured`, `allowHashEmbeddings`, `lastEmbeddingSuccessAt`, `lastDegradedAt`.
 - `ALLOW_HASH_EMBEDDINGS` defaults to `false`. Even when set to `true`, hash vectors are refused by pgvector similarity search and never searched.
 

@@ -319,16 +319,6 @@ export class AIService {
     );
   }
 
-  /**
-   * The retrieval mode answers for this workspace are being served in right
-   * now. Summaries read the whole document rather than retrieving chunks, but
-   * callers still need the provenance so the UI can say how the rest of the
-   * answers are produced.
-   */
-  currentRetrievalMode(): RetrievalMode {
-    return this.embeddings.retrievalModeNow();
-  }
-
   // LLM chat (OpenRouter)
   private async chat(messages: { role: string; content: string }[]): Promise<string | null> {
     const configuredKey = process.env.OPENROUTER_API_KEY;

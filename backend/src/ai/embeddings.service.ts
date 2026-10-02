@@ -105,9 +105,9 @@ export class EmbeddingsService implements OnModuleInit {
   }
 
   /**
-   * The mode a retrieval call would be served right now. Useful for answers
-   * that are not themselves retrieval-based (summaries read the whole
-   * document) but whose provenance the caller still needs to show.
+   * The mode a retrieval call would be served right now, from provider state
+   * alone — no retrieval is performed. Only endpoints that actually retrieve
+   * report this; non-retrieval results (summaries) must not claim a mode.
    */
   retrievalModeNow(): RetrievalMode {
     if (this.mode === 'hash-fallback') return 'hash-fallback';
